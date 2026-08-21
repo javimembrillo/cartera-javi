@@ -3,390 +3,318 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Cartera Javi · Seguimiento</title>
+  <title>Cartera Javi · Online</title>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
-      --bg: #0f0f12;
-      --card: #1a1a21;
-      --card2: #22222b;
-      --border: #2e2e3a;
-      --text: #f0f0f5;
-      --muted: #9a9aab;
-      --green: #22c55e;
-      --red: #ef4444;
-      --accent: #3b82f6;
-      --accent2: #8b5cf6;
-      --orange: #f59e0b;
+      --bg: #0f0f12; --card: #1a1a21; --card2: #22222b; --border: #2e2e3a;
+      --text: #f0f0f5; --muted: #9a9aab; --green: #22c55e; --red: #ef4444;
+      --accent: #3b82f6; --accent2: #8b5cf6; --orange: #f59e0b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-      padding: 12px;
-      max-width: 960px;
-      margin: 0 auto;
-      min-height: 100vh;
+      background: var(--bg); color: var(--text); line-height: 1.5;
+      padding: 12px; max-width: 960px; margin: 0 auto; min-height: 100vh;
     }
     h1 { font-size: 1.35rem; font-weight: 700; margin-bottom: 2px; }
     h2 { font-size: 1.05rem; font-weight: 600; margin: 22px 0 10px; }
     .muted { color: var(--muted); font-size: 0.85rem; }
-    .header {
-      display: flex; justify-content: space-between; align-items: flex-start;
-      gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
-    }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
     .total-box {
-      background: linear-gradient(135deg, #1e3a5f, #1a1a2e);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px 20px;
-      flex: 1;
-      min-width: 240px;
+      background: linear-gradient(135deg, #1e3a5f, #1a1a2e); border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px 20px; flex: 1; min-width: 240px;
     }
     .total-label { font-size: 0.8rem; color: var(--muted); }
     .total-value { font-size: 1.95rem; font-weight: 700; letter-spacing: -0.5px; }
     .total-sub { font-size: 0.82rem; margin-top: 4px; }
-    .btn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 16px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
+    .btn { background: var(--accent); color: white; border: none; border-radius: 10px; padding: 10px 16px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
     .btn:hover { opacity: 0.92; }
-    .btn-secondary {
-      background: var(--card2);
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
+    .btn-secondary { background: var(--card2); border: 1px solid var(--border); color: var(--text); }
     .btn-sm { padding: 6px 12px; font-size: 0.8rem; border-radius: 8px; }
     .btn-orange { background: var(--orange); }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 10px;
-      margin-bottom: 8px;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-    }
-    .card-title {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 6px;
-    }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-bottom: 8px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; }
+    .card-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
     .ticker { font-weight: 700; font-size: 1rem; }
-    .badge {
-      font-size: 0.7rem; padding: 2px 7px; border-radius: 6px;
-      background: var(--card2); color: var(--muted);
-    }
+    .badge { font-size: 0.7rem; padding: 2px 7px; border-radius: 6px; background: var(--card2); color: var(--muted); }
     .badge-dep { background: #3b2f1a; color: #fbbf24; }
     .price-row { display: flex; justify-content: space-between; font-size: 0.88rem; margin: 3px 0; }
     .value-eur { font-size: 1.15rem; font-weight: 600; margin-top: 6px; }
     .pos { color: var(--green); }
-    .neg { color: var(--red); }
-    input, select {
-      background: var(--card2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 8px;
-      padding: 9px 11px;
-      font-size: 0.9rem;
-      width: 100%;
-    }
+    input, select { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 11px; font-size: 0.9rem; width: 100%; }
     input:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
     label { font-size: 0.78rem; color: var(--muted); display: block; margin-bottom: 3px; }
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    @media (max-width: 520px) {
-      .form-row { grid-template-columns: 1fr; }
-    }
-    .chart-box {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      margin-bottom: 12px;
-      height: 260px;
-      position: relative;
-    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    @media (max-width: 520px) { .form-row { grid-template-columns: 1fr; } }
+    .chart-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; height: 260px; position: relative; }
     table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
     th, td { padding: 9px 8px; text-align: right; border-bottom: 1px solid var(--border); }
     th:first-child, td:first-child { text-align: left; }
     th { color: var(--muted); font-weight: 500; font-size: 0.78rem; }
     .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: flex-end; }
-    .note {
-      background: #1c1c28;
-      border-left: 3px solid var(--accent2);
-      padding: 10px 12px;
-      border-radius: 0 8px 8px 0;
-      font-size: 0.82rem;
-      color: var(--muted);
-      margin: 12px 0;
-    }
-    .footer {
-      text-align: center;
-      margin-top: 28px;
-      padding-bottom: 40px;
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
+    .note { background: #1c1c28; border-left: 3px solid var(--accent2); padding: 10px 12px; border-radius: 0 8px 8px 0; font-size: 0.82rem; color: var(--muted); margin: 12px 0; }
+    .footer { text-align: center; margin-top: 28px; padding-bottom: 40px; font-size: 0.75rem; color: var(--muted); }
     .edit-price { width: 92px; padding: 4px 6px; font-size: 0.85rem; text-align: right; }
-    .status-dot {
-      display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-      margin-right: 6px;
-    }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
     .dot-green { background: var(--green); }
     .dot-gray { background: #555; }
     .section-card { margin-bottom: 8px; }
+    #loginScreen { max-width: 380px; margin: 60px auto; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 28px 24px; }
+    #loginScreen h1 { text-align: center; margin-bottom: 6px; }
+    #loginScreen .muted { text-align: center; margin-bottom: 20px; }
+    #loginError { color: var(--red); font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
+    #app { display: none; }
+    .user-bar { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 10px; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div>
-      <h1>Cartera Javi</h1>
-      <div class="muted">Seguimiento personal · Datos guardados en este navegador</div>
+  <div id="loginScreen">
+    <h1>Cartera Javi</h1>
+    <div class="muted">Acceso restringido</div>
+    <div style="margin-bottom:12px;">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="tu@email.com" autocomplete="username">
     </div>
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button class="btn btn-secondary btn-sm" onclick="saveSnapshot()">Guardar punto</button>
-      <button class="btn btn-sm" onclick="manualRefresh()">Actualizar precios</button>
+    <div style="margin-bottom:16px;">
+      <label>Contraseña</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
     </div>
+    <button class="btn" style="width:100%;" onclick="doLogin()">Entrar</button>
+    <div id="loginError"></div>
+    <div class="muted" style="margin-top:16px; font-size:0.78rem; text-align:center;">Solo usuarios autorizados</div>
   </div>
 
-  <div class="total-box">
-    <div class="total-label">Valor total de la cartera</div>
-    <div class="total-value" id="totalValue">— €</div>
-    <div class="total-sub muted" id="totalSub">Cargando…</div>
-  </div>
-
-  <!-- ========== ACCIONES / ETFs ========== -->
-  <h2>Acciones y ETFs</h2>
-  <div class="grid" id="holdingsGrid"></div>
-
-  <div class="card section-card">
-    <div style="font-weight:600; margin-bottom:10px;">Añadir compra</div>
-    <div class="form-row">
+  <div id="app">
+    <div class="header">
       <div>
-        <label>Activo</label>
-        <select id="addTicker">
-          <option value="TSLA">TSLA</option>
-          <option value="SPCX">SPCX</option>
-          <option value="QDVE">QDVE</option>
-          <option value="VWCE">VWCE</option>
-        </select>
+        <h1>Cartera Javi</h1>
+        <div class="user-bar">
+          <span id="userEmail"></span>
+          <button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button>
+        </div>
       </div>
-      <div>
-        <label>Cantidad</label>
-        <input type="number" id="addQty" step="any" placeholder="Ej: 1.5">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="saveSnapshot()">Guardar punto</button>
+        <button class="btn btn-sm" onclick="manualRefresh()">Actualizar FX</button>
       </div>
     </div>
-    <div class="form-row">
-      <div>
-        <label>Precio unitario</label>
-        <input type="number" id="addPrice" step="any" placeholder="Ej: 350">
-      </div>
-      <div style="display:flex; align-items:flex-end;">
-        <button class="btn" style="width:100%;" onclick="addPurchase()">Añadir</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- ========== DEPÓSITOS A PLAZO ========== -->
-  <h2>Depósitos a plazo fijo (interés diario)</h2>
-  <div class="note">
-    Introduce el capital actual y el TIN (tipo de interés nominal anual). La app calcula el interés diario simple y el valor actual. El depósito en dólares se convierte a euros con el tipo de cambio del momento.
-  </div>
-  <div class="grid" id="depositsGrid"></div>
-
-  <div class="card section-card">
-    <div style="font-weight:600; margin-bottom:10px;">Configurar / actualizar depósito</div>
-    <div class="form-row">
-      <div>
-        <label>Depósito</label>
-        <select id="depSelect">
-          <option value="EUR">Depósito EUR</option>
-          <option value="USD">Depósito USD</option>
-        </select>
-      </div>
-      <div>
-        <label>Capital actual</label>
-        <input type="number" id="depPrincipal" step="any" placeholder="Ej: 5000">
-      </div>
+    <div class="total-box">
+      <div class="total-label">Valor total de la cartera</div>
+      <div class="total-value" id="totalValue">— €</div>
+      <div class="total-sub muted" id="totalSub">Cargando…</div>
     </div>
-    <div class="form-row">
-      <div>
-        <label>TIN anual (%)</label>
-        <input type="number" id="depTin" step="0.01" placeholder="Ej: 3.25">
+
+    <h2>Acciones y ETFs</h2>
+    <div class="grid" id="holdingsGrid"></div>
+
+    <div class="card section-card">
+      <div style="font-weight:600; margin-bottom:10px;">Añadir compra</div>
+      <div class="form-row">
+        <div><label>Activo</label>
+          <select id="addTicker">
+            <option value="TSLA">TSLA</option><option value="SPCX">SPCX</option>
+            <option value="QDVE">QDVE</option><option value="VWCE">VWCE</option>
+          </select>
+        </div>
+        <div><label>Cantidad</label><input type="number" id="addQty" step="any" placeholder="Ej: 1.5"></div>
       </div>
-      <div style="display:flex; align-items:flex-end;">
-        <button class="btn btn-orange" style="width:100%;" onclick="updateDeposit()">Guardar depósito</button>
+      <div class="form-row">
+        <div><label>Precio unitario</label><input type="number" id="addPrice" step="any" placeholder="Ej: 350"></div>
+        <div style="display:flex; align-items:flex-end;"><button class="btn" style="width:100%;" onclick="addPurchase()">Añadir</button></div>
       </div>
     </div>
-  </div>
 
-  <!-- ========== GRÁFICA ========== -->
-  <h2>Evolución del valor total</h2>
-  <div class="chart-box">
-    <canvas id="valueChart"></canvas>
-  </div>
-  <div class="muted" style="margin-bottom:16px;">Pulsa “Guardar punto” para registrar el valor actual. Los puntos se guardan solo en este dispositivo.</div>
+    <h2>Depósitos a plazo fijo (interés diario)</h2>
+    <div class="note">Introduce el capital actual y el TIN anual. La app calcula el interés diario simple. El depósito en dólares se convierte a euros.</div>
+    <div class="grid" id="depositsGrid"></div>
 
-  <!-- ========== PROYECCIONES ========== -->
-  <h2>Proyecciones (ilustrativas)</h2>
-  <div class="note">
-    Solo orientativas. Crecimiento compuesto constante. El mercado real es volátil. No es consejo de inversión.
-  </div>
-  <div class="controls">
-    <div>
-      <label>Rentabilidad anual media esperada (%)</label>
-      <input type="number" id="assumedReturn" value="8" step="0.5" style="width:110px;" onchange="updateProjections()">
+    <div class="card section-card">
+      <div style="font-weight:600; margin-bottom:10px;">Configurar / actualizar depósito</div>
+      <div class="form-row">
+        <div><label>Depósito</label>
+          <select id="depSelect"><option value="EUR">Depósito EUR</option><option value="USD">Depósito USD</option></select>
+        </div>
+        <div><label>Capital actual</label><input type="number" id="depPrincipal" step="any" placeholder="Ej: 5000"></div>
+      </div>
+      <div class="form-row">
+        <div><label>TIN anual (%)</label><input type="number" id="depTin" step="0.01" placeholder="Ej: 3.25"></div>
+        <div style="display:flex; align-items:flex-end;"><button class="btn btn-orange" style="width:100%;" onclick="updateDeposit()">Guardar depósito</button></div>
+      </div>
     </div>
-    <div>
-      <label>Volatilidad anual aprox. (%)</label>
-      <input type="number" id="assumedVol" value="18" step="1" style="width:110px;" onchange="updateProjections()">
-    </div>
-  </div>
-  <div class="card" style="overflow-x:auto;">
-    <table>
-      <thead>
-        <tr>
-          <th>Horizonte</th>
-          <th>Valor base</th>
-          <th>Escenario medio</th>
-          <th>Rango aprox. (±1σ)</th>
-        </tr>
-      </thead>
-      <tbody id="projBody"></tbody>
-    </table>
-  </div>
 
-  <div class="footer">
-    Datos guardados en localStorage de este navegador<br>
-    Precios de acciones/ETFs editables + intento de actualización automática 1×/hora en horario Wall Street<br>
-    QDVE & VWCE en € · TSLA & SPCX en $ · Depósitos con interés diario simple
+    <h2>Evolución del valor total</h2>
+    <div class="chart-box"><canvas id="valueChart"></canvas></div>
+    <div class="muted" style="margin-bottom:16px;">Pulsa “Guardar punto” para registrar el valor actual en la nube.</div>
+
+    <h2>Proyecciones (ilustrativas)</h2>
+    <div class="note">Solo orientativas. No es consejo de inversión.</div>
+    <div class="controls">
+      <div><label>Rentabilidad anual media esperada (%)</label>
+        <input type="number" id="assumedReturn" value="8" step="0.5" style="width:110px;" onchange="updateProjections()">
+      </div>
+      <div><label>Volatilidad anual aprox. (%)</label>
+        <input type="number" id="assumedVol" value="18" step="1" style="width:110px;" onchange="updateProjections()">
+      </div>
+    </div>
+    <div class="card" style="overflow-x:auto;">
+      <table>
+        <thead><tr><th>Horizonte</th><th>Valor base</th><th>Escenario medio</th><th>Rango aprox. (±1σ)</th></tr></thead>
+        <tbody id="projBody"></tbody>
+      </table>
+    </div>
+
+    <div class="footer">Datos en la nube (Firebase) · Acceso solo para usuarios autorizados<br>Sincronizado entre dispositivos</div>
   </div>
 
 <script>
-// ===================== ESTADO =====================
+const firebaseConfig = {
+  apiKey: "AIzaSyCAhTFcJqDtUUjntwrApGGOv7RBRxuqPAw",
+  authDomain: "cartera-membrillo-quinonez.firebaseapp.com",
+  projectId: "cartera-membrillo-quinonez",
+  storageBucket: "cartera-membrillo-quinonez.firebasestorage.app",
+  messagingSenderId: "131713034804",
+  appId: "1:131713034804:web:6cd27c06ec30b4af3d7861"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const ALLOWED_EMAILS = ['javier@doctormembrillo.com', 'mabel.felicia@gmail.com'];
+
 const DEFAULT_HOLDINGS = {
   QDVE: { qty: 248, currency: 'EUR', name: 'iShares S&P 500 Info Tech' },
   TSLA: { qty: 30.00, currency: 'USD', name: 'Tesla' },
   VWCE: { qty: 24.31, currency: 'EUR', name: 'Vanguard FTSE All-World' },
   SPCX: { qty: 19.97, currency: 'USD', name: 'SpaceX' }
 };
+const DEFAULT_PRICES = { QDVE: 43.31, TSLA: 348.70, VWCE: 165.70, SPCX: 135.00 };
+const DEFAULT_DEPOSITS = { EUR: { principal: 0, tin: 0, lastUpdate: null }, USD: { principal: 0, tin: 0, lastUpdate: null } };
 
-const DEFAULT_PRICES = {
-  QDVE: 43.31,
-  TSLA: 348.70,
-  VWCE: 165.70,
-  SPCX: 135.00
-};
-
-const DEFAULT_DEPOSITS = {
-  EUR: { principal: 0, tin: 0, lastUpdate: null },
-  USD: { principal: 0, tin: 0, lastUpdate: null }
-};
-
-let holdings = JSON.parse(localStorage.getItem('javi_holdings_v2')) || structuredClone(DEFAULT_HOLDINGS);
-let prices = JSON.parse(localStorage.getItem('javi_prices_v2')) || { ...DEFAULT_PRICES };
-let deposits = JSON.parse(localStorage.getItem('javi_deposits_v2')) || structuredClone(DEFAULT_DEPOSITS);
-let eurusd = parseFloat(localStorage.getItem('javi_eurusd_v2')) || 1.170;
-let history = JSON.parse(localStorage.getItem('javi_history_v2')) || [];
-let lastPriceUpdate = parseInt(localStorage.getItem('javi_lastPriceUpdate') || '0');
+let holdings = structuredClone(DEFAULT_HOLDINGS);
+let prices = { ...DEFAULT_PRICES };
+let deposits = structuredClone(DEFAULT_DEPOSITS);
+let eurusd = 1.170;
+let history = [];
+let lastPriceUpdate = 0;
 let valueChart = null;
+let saving = false;
 
-// ===================== UTILIDADES =====================
+auth.onAuthStateChanged(async (user) => {
+  if (user && ALLOWED_EMAILS.includes(user.email.toLowerCase())) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('userEmail').textContent = user.email;
+    await loadFromCloud();
+    await fetchEURUSD();
+    renderAll();
+  } else {
+    if (user) { await auth.signOut(); document.getElementById('loginError').textContent = 'Email no autorizado'; }
+    document.getElementById('loginScreen').style.display = 'block';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.textContent = '';
+  if (!ALLOWED_EMAILS.includes(email)) { errEl.textContent = 'Este email no está autorizado'; return; }
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+  } catch (e) {
+    if (e.code === 'auth/user-not-found') {
+      try { await auth.createUserWithEmailAndPassword(email, password); }
+      catch (e2) { errEl.textContent = 'Error al crear cuenta: ' + e2.message; }
+    } else { errEl.textContent = 'Error: ' + e.message; }
+  }
+}
+
+function doLogout() { auth.signOut(); }
+
+async function loadFromCloud() {
+  try {
+    const doc = await db.collection('portfolio').doc('main').get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data.holdings) holdings = data.holdings;
+      if (data.prices) prices = data.prices;
+      if (data.deposits) deposits = data.deposits;
+      if (data.eurusd) eurusd = data.eurusd;
+      if (data.history) history = data.history;
+      if (data.lastPriceUpdate) lastPriceUpdate = data.lastPriceUpdate;
+    } else { await saveToCloud(); }
+  } catch (e) {
+    console.error(e);
+    alert('Error al cargar datos. Revisa las reglas de Firestore.');
+  }
+}
+
+async function saveToCloud() {
+  if (saving) return;
+  saving = true;
+  try {
+    await db.collection('portfolio').doc('main').set({
+      holdings, prices, deposits, eurusd, history, lastPriceUpdate,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+  } catch (e) { console.error(e); alert('Error al guardar'); }
+  saving = false;
+}
+
 function fmt(n, dec = 2) {
   if (isNaN(n)) return '—';
   return n.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
 }
-function saveState() {
-  localStorage.setItem('javi_holdings_v2', JSON.stringify(holdings));
-  localStorage.setItem('javi_prices_v2', JSON.stringify(prices));
-  localStorage.setItem('javi_deposits_v2', JSON.stringify(deposits));
-  localStorage.setItem('javi_eurusd_v2', eurusd);
-  localStorage.setItem('javi_history_v2', JSON.stringify(history));
-  localStorage.setItem('javi_lastPriceUpdate', lastPriceUpdate.toString());
-}
 
 function getValueEUR(ticker) {
-  const h = holdings[ticker];
-  const p = prices[ticker] || 0;
-  if (h.currency === 'EUR') return h.qty * p;
-  return h.qty * p / eurusd;
+  const h = holdings[ticker]; const p = prices[ticker] || 0;
+  return h.currency === 'EUR' ? h.qty * p : h.qty * p / eurusd;
 }
 
 function getDepositValueEUR(key) {
   const d = deposits[key];
   if (!d || !d.principal) return 0;
-  // Interés diario simple acumulado desde lastUpdate
   let principal = d.principal;
   if (d.lastUpdate && d.tin > 0) {
     const days = Math.max(0, Math.floor((Date.now() - d.lastUpdate) / 86400000));
-    const dailyRate = d.tin / 100 / 365;
-    principal = d.principal * (1 + dailyRate * days);
+    principal = d.principal * (1 + (d.tin / 100 / 365) * days);
   }
-  if (key === 'EUR') return principal;
-  return principal / eurusd;
+  return key === 'EUR' ? principal : principal / eurusd;
 }
 
 function totalEUR() {
   let t = Object.keys(holdings).reduce((s, k) => s + getValueEUR(k), 0);
-  t += getDepositValueEUR('EUR') + getDepositValueEUR('USD');
-  return t;
+  return t + getDepositValueEUR('EUR') + getDepositValueEUR('USD');
 }
 
 function isWallStreetHours() {
-  // Aprox. 15:30 - 22:00 hora de Madrid (CEST/CET)
-  const now = new Date();
-  const madrid = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));
-  const day = madrid.getDay(); // 0=Dom, 6=Sáb
+  const madrid = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Madrid' }));
+  const day = madrid.getDay();
   if (day === 0 || day === 6) return false;
-  const h = madrid.getHours();
-  const m = madrid.getMinutes();
-  const mins = h * 60 + m;
-  return mins >= (15 * 60 + 30) && mins <= (22 * 60);
+  const mins = madrid.getHours() * 60 + madrid.getMinutes();
+  return mins >= 930 && mins <= 1320;
 }
 
-// ===================== RENDER =====================
 function renderHoldings() {
   const grid = document.getElementById('holdingsGrid');
   grid.innerHTML = '';
-  const order = ['TSLA', 'SPCX', 'QDVE', 'VWCE'];
-  order.forEach(t => {
-    const h = holdings[t];
-    const p = prices[t] || 0;
-    const val = getValueEUR(t);
+  ['TSLA', 'SPCX', 'QDVE', 'VWCE'].forEach(t => {
+    const h = holdings[t]; const p = prices[t] || 0; const val = getValueEUR(t);
     const card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = `
-      <div class="card-title">
-        <span class="ticker">${t}</span>
-        <span class="badge">${h.currency}</span>
-      </div>
+    card.innerHTML = `<div class="card-title"><span class="ticker">${t}</span><span class="badge">${h.currency}</span></div>
       <div class="muted" style="font-size:0.78rem; margin-bottom:6px;">${h.name}</div>
       <div class="price-row"><span>Cantidad</span><span>${fmt(h.qty, 4)}</span></div>
-      <div class="price-row">
-        <span>Precio</span>
-        <span>
-          <input class="edit-price" type="number" step="any" value="${p}"
-            onchange="updatePrice('${t}', this.value)">
-          ${h.currency === 'EUR' ? '€' : '$'}
-        </span>
-      </div>
-      <div class="value-eur">${fmt(val)} €</div>
-    `;
+      <div class="price-row"><span>Precio</span><span>
+        <input class="edit-price" type="number" step="any" value="${p}" onchange="updatePrice('${t}', this.value)">
+        ${h.currency === 'EUR' ? '€' : '$'}</span></div>
+      <div class="value-eur">${fmt(val)} €</div>`;
     grid.appendChild(card);
   });
 }
@@ -395,57 +323,43 @@ function renderDeposits() {
   const grid = document.getElementById('depositsGrid');
   grid.innerHTML = '';
   ['EUR', 'USD'].forEach(key => {
-    const d = deposits[key];
-    const current = getDepositValueEUR(key);
-    const dailyInterest = d.principal * (d.tin / 100 / 365);
+    const d = deposits[key]; const current = getDepositValueEUR(key);
+    const dailyInterest = (d.principal || 0) * ((d.tin || 0) / 100 / 365);
     const dailyEUR = key === 'EUR' ? dailyInterest : dailyInterest / eurusd;
     const card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = `
-      <div class="card-title">
-        <span class="ticker">Depósito ${key}</span>
-        <span class="badge badge-dep">TIN ${fmt(d.tin, 2)}%</span>
-      </div>
-      <div class="price-row"><span>Capital base</span><span>${fmt(d.principal)} ${key}</span></div>
+    card.innerHTML = `<div class="card-title"><span class="ticker">Depósito ${key}</span>
+      <span class="badge badge-dep">TIN ${fmt(d.tin || 0, 2)}%</span></div>
+      <div class="price-row"><span>Capital base</span><span>${fmt(d.principal || 0)} ${key}</span></div>
       <div class="price-row"><span>Interés diario</span><span class="pos">+${fmt(dailyInterest, 4)} ${key}</span></div>
       <div class="price-row"><span>≈ en euros/día</span><span class="pos">+${fmt(dailyEUR, 2)} €</span></div>
       <div class="value-eur">${fmt(current)} €</div>
       <div class="muted" style="font-size:0.75rem; margin-top:4px;">
-        ${d.lastUpdate ? 'Últ. act.: ' + new Date(d.lastUpdate).toLocaleDateString('es-ES') : 'Sin fecha de inicio'}
-      </div>
-    `;
+        ${d.lastUpdate ? 'Últ. act.: ' + new Date(d.lastUpdate).toLocaleDateString('es-ES') : 'Sin fecha'}</div>`;
     grid.appendChild(card);
   });
 }
 
 function renderTotal() {
-  const total = totalEUR();
-  document.getElementById('totalValue').textContent = fmt(total) + ' €';
+  document.getElementById('totalValue').textContent = fmt(totalEUR()) + ' €';
   const last = lastPriceUpdate ? new Date(lastPriceUpdate).toLocaleString('es-ES') : 'nunca';
   const market = isWallStreetHours() ? '<span class="status-dot dot-green"></span>Mercado abierto' : '<span class="status-dot dot-gray"></span>Mercado cerrado';
-  document.getElementById('totalSub').innerHTML =
-    `EUR/USD ≈ ${fmt(eurusd, 4)} · ${market}<br>Últ. precios: ${last}`;
+  document.getElementById('totalSub').innerHTML = `EUR/USD ≈ ${fmt(eurusd, 4)} · ${market}<br>Últ. FX: ${last}`;
 }
 
-function updatePrice(ticker, val) {
-  prices[ticker] = parseFloat(val) || 0;
-  saveState();
-  renderAll();
-}
+function updatePrice(ticker, val) { prices[ticker] = parseFloat(val) || 0; saveToCloud(); renderAll(); }
 
 function addPurchase() {
   const t = document.getElementById('addTicker').value;
   const qty = parseFloat(document.getElementById('addQty').value);
   const price = parseFloat(document.getElementById('addPrice').value);
-  if (!qty || qty <= 0) { alert('Introduce una cantidad válida'); return; }
-  if (!price || price <= 0) { alert('Introduce un precio válido'); return; }
-
+  if (!qty || qty <= 0) { alert('Cantidad inválida'); return; }
+  if (!price || price <= 0) { alert('Precio inválido'); return; }
   holdings[t].qty = (holdings[t].qty || 0) + qty;
   prices[t] = price;
   document.getElementById('addQty').value = '';
   document.getElementById('addPrice').value = '';
-  saveState();
-  renderAll();
+  saveToCloud(); renderAll();
   alert(`Añadidas ${fmt(qty, 4)} de ${t}`);
 }
 
@@ -455,57 +369,33 @@ function updateDeposit() {
   const tin = parseFloat(document.getElementById('depTin').value);
   if (isNaN(principal) || principal < 0) { alert('Capital inválido'); return; }
   if (isNaN(tin) || tin < 0) { alert('TIN inválido'); return; }
-
-  deposits[key] = {
-    principal: principal,
-    tin: tin,
-    lastUpdate: Date.now()
-  };
+  deposits[key] = { principal, tin, lastUpdate: Date.now() };
   document.getElementById('depPrincipal').value = '';
   document.getElementById('depTin').value = '';
-  saveState();
-  renderAll();
+  saveToCloud(); renderAll();
   alert(`Depósito ${key} actualizado`);
 }
 
 function saveSnapshot() {
-  const total = totalEUR();
-  history.push({ t: Date.now(), v: total });
+  history.push({ t: Date.now(), v: totalEUR() });
   if (history.length > 120) history = history.slice(-120);
-  saveState();
-  updateChart();
-  alert('Punto guardado');
+  saveToCloud(); updateChart();
+  alert('Punto guardado en la nube');
 }
 
 function updateChart() {
   const ctx = document.getElementById('valueChart').getContext('2d');
   const labels = history.map(h => new Date(h.t).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }));
   const data = history.map(h => h.v);
-
   if (valueChart) valueChart.destroy();
   valueChart = new Chart(ctx, {
     type: 'line',
-    data: {
-      labels: labels.length ? labels : ['Ahora'],
-      datasets: [{
-        label: 'Valor total (€)',
-        data: data.length ? data : [totalEUR()],
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59,130,246,0.12)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 3
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { ticks: { color: '#9a9aab', maxTicksLimit: 8 }, grid: { color: '#2e2e3a' } },
-        y: { ticks: { color: '#9a9aab' }, grid: { color: '#2e2e3a' } }
-      }
-    }
+    data: { labels: labels.length ? labels : ['Ahora'],
+      datasets: [{ label: 'Valor total (€)', data: data.length ? data : [totalEUR()],
+        borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.12)', fill: true, tension: 0.3, pointRadius: 3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+      scales: { x: { ticks: { color: '#9a9aab', maxTicksLimit: 8 }, grid: { color: '#2e2e3a' } },
+                y: { ticks: { color: '#9a9aab' }, grid: { color: '#2e2e3a' } } } }
   });
 }
 
@@ -513,85 +403,35 @@ function updateProjections() {
   const r = (parseFloat(document.getElementById('assumedReturn').value) || 8) / 100;
   const vol = (parseFloat(document.getElementById('assumedVol').value) || 18) / 100;
   const base = totalEUR();
-  const horizons = [
-    { label: '1 día', years: 1/365 },
-    { label: '1 semana', years: 7/365 },
-    { label: '1 mes', years: 1/12 },
-    { label: '1 año', years: 1 },
-    { label: '5 años', years: 5 },
-    { label: '10 años', years: 10 }
-  ];
+  const horizons = [{ label: '1 día', years: 1/365 }, { label: '1 semana', years: 7/365 },
+    { label: '1 mes', years: 1/12 }, { label: '1 año', years: 1 }, { label: '5 años', years: 5 }, { label: '10 años', years: 10 }];
   const tbody = document.getElementById('projBody');
   tbody.innerHTML = '';
   horizons.forEach(h => {
     const mean = base * Math.pow(1 + r, h.years);
     const sigma = base * vol * Math.sqrt(h.years);
-    const low = Math.max(0, mean - sigma);
-    const high = mean + sigma;
     const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${h.label}</td>
-      <td>${fmt(base)} €</td>
-      <td><strong>${fmt(mean)} €</strong></td>
-      <td>${fmt(low)} – ${fmt(high)} €</td>
-    `;
+    tr.innerHTML = `<td>${h.label}</td><td>${fmt(base)} €</td><td><strong>${fmt(mean)} €</strong></td>
+      <td>${fmt(Math.max(0, mean - sigma))} – ${fmt(mean + sigma)} €</td>`;
     tbody.appendChild(tr);
   });
 }
 
-function renderAll() {
-  renderHoldings();
-  renderDeposits();
-  renderTotal();
-  updateProjections();
-  updateChart();
-}
+function renderAll() { renderHoldings(); renderDeposits(); renderTotal(); updateProjections(); updateChart(); }
 
-// ===================== PRECIOS =====================
 async function fetchEURUSD() {
   try {
     const res = await fetch('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json');
     const data = await res.json();
-    if (data?.eur?.usd) {
-      eurusd = data.eur.usd;
-    }
-  } catch (e) {
-    console.log('EURUSD no actualizado');
-  }
+    if (data?.eur?.usd) { eurusd = data.eur.usd; lastPriceUpdate = Date.now(); await saveToCloud(); }
+  } catch (e) {}
 }
 
-// Intento muy ligero de precios (solo si hay mercado y ha pasado >55 min)
-async function tryUpdatePrices() {
-  const now = Date.now();
-  if (now - lastPriceUpdate < 55 * 60 * 1000) return; // menos de 55 min
-  if (!isWallStreetHours()) return;
+async function manualRefresh() { await fetchEURUSD(); renderAll(); alert('Tipo de cambio actualizado'); }
 
-  await fetchEURUSD();
-  // Precios de acciones: de momento se dejan editables.
-  // (Las APIs gratuitas con CORS fiable son limitadas; el usuario puede actualizar manualmente)
-  lastPriceUpdate = now;
-  saveState();
-  renderAll();
-}
-
-async function manualRefresh() {
-  await fetchEURUSD();
-  lastPriceUpdate = Date.now();
-  saveState();
-  renderAll();
-  alert('Tipo de cambio actualizado. Los precios de acciones/ETFs se pueden editar manualmente en cada tarjeta.');
-}
-
-// ===================== INIT =====================
-(async function init() {
-  await fetchEURUSD();
-  // Aplicar interés diario acumulado visualmente (no modifica el principal guardado hasta que el usuario actualice)
-  renderAll();
-  // Intento silencioso de actualización si corresponde
-  tryUpdatePrices();
-  // Revisar cada 10 minutos si toca actualizar
-  setInterval(tryUpdatePrices, 10 * 60 * 1000);
-})();
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') doLogin();
+});
 </script>
 </body>
 </html>
