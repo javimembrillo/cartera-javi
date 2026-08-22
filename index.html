@@ -9,7 +9,68 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-</head>
-<body>
-<p>LOADING_FULL_FILE_NEXT</p>
+<style>
+:root{--bg:#0f0f12;--card:#1a1a21;--card2:#22222b;--border:#2e2e3a;--text:#f0f0f5;--muted:#9a9aab;--green:#22c55e;--red:#ef4444;--accent:#3b82f6;--orange:#f59e0b;--teal:#14b8a6}
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding:12px;max-width:960px;margin:0 auto}
+h1{font-size:1.35rem}h2{font-size:1.05rem;margin:22px 0 10px}.muted{color:var(--muted);font-size:.85rem}
+.header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.total-box{background:linear-gradient(135deg,#1e3a5f,#1a1a2e);border:1px solid var(--border);border-radius:16px;padding:16px 20px}
+.total-value{font-size:1.95rem;font-weight:700}.kpi{margin-top:8px;font-size:.9rem}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer}
+.btn-secondary{background:var(--card2);border:1px solid var(--border);color:var(--text)}.btn-sm{padding:6px 12px;font-size:.8rem}.btn-orange{background:var(--orange)}
+.btn-danger{background:#7f1d1d;color:#fecaca;border:none;border-radius:8px;padding:4px 8px;font-size:.75rem;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px}
+.price-row{display:flex;justify-content:space-between;font-size:.88rem;margin:3px 0}.value-eur{font-size:1.15rem;font-weight:600;margin-top:6px}
+.pos{color:var(--green)}.neg{color:var(--red)}
+input,select{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px;width:100%}
+label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:3px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.chart-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;height:320px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;text-align:right;border-bottom:1px solid var(--border)}th:first-child,td:first-child{text-align:left}
+.note{background:#1c1c28;border-left:3px solid #8b5cf6;padding:10px;font-size:.82rem;color:var(--muted);margin:12px 0}
+#loginScreen{max-width:380px;margin:60px auto;background:var(--card);padding:28px;border-radius:16px}#app{display:none}
+.edit-price{width:92px;padding:4px 6px;text-align:right}.badge{font-size:.7rem;padding:2px 7px;border-radius:6px;background:var(--card2);color:var(--muted)}
+.badge-dep{background:#3b2f1a;color:#fbbf24}
+@media(max-width:640px){.form-row-3{grid-template-columns:1fr 1fr}}
+</style></head><body>
+<div id="loginScreen"><h1>Cartera Javi</h1><div class="muted">Acceso restringido</div>
+<label>Email</label><input id="loginEmail" type="email"><label>Contraseña</label><input id="loginPassword" type="password">
+<button class="btn" style="width:100%;margin-top:12px" onclick="doLogin()">Entrar</button><div id="loginError" class="neg"></div></div>
+<div id="app">
+<div class="header"><div><h1>Cartera Javi</h1><div class="muted" id="userEmail"></div></div>
+<div><button class="btn btn-secondary btn-sm" onclick="saveSnapshot()">Guardar punto</button> <button class="btn btn-sm" onclick="manualRefresh()">Actualizar FX</button> <button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button></div></div>
+<div class="total-box"><div class="muted">Valor total (acciones + depósitos)</div><div class="total-value" id="totalValue">— €</div><div class="kpi" id="plLine"></div><div class="muted" id="totalSub"></div></div>
+<h2>Acciones y ETFs</h2><div class="grid" id="holdingsGrid"></div>
+<div class="card"><b>Añadir compra</b>
+<div class="form-row"><div><label>Activo</label><select id="addTicker"><option>TSLA</option><option>SPCX</option><option>QDVE</option><option>VWCE</option></select></div><div><label>Cantidad</label><input id="addQty" type="number" step="any"></div></div>
+<div class="form-row"><div><label>Precio</label><input id="addPrice" type="number" step="any"></div><div><button class="btn" style="width:100%;margin-top:18px" onclick="addPurchase()">Añadir</button></div></div></div>
+<h2>Depósitos</h2><div class="grid" id="depositsGrid"></div>
+<div class="card"><b>Añadir movimiento de depósito</b>
+<div class="muted" style="margin-bottom:8px">Importe positivo = ingreso. Negativo = retiro. La fecha marca cuándo entra en la gráfica.</div>
+<div class="form-row-3">
+<div><label>Depósito</label><select id="depSelect"><option value="EUR">EUR</option><option value="USD">USD</option></select></div>
+<div><label>Fecha</label><input id="depDate" type="date"></div>
+<div><label>Importe</label><input id="depAmount" type="number" step="any" placeholder="+10000 o -500"></div>
+</div>
+<div class="form-row">
+<div><label>TIN % (se aplica a este depósito)</label><input id="depTin" type="number" step="0.01" placeholder="ej. 2.50"></div>
+<div><label>Nota (opcional)</label><input id="depNote" type="text" placeholder="Aportación inicial, transferencia…"></div>
+</div>
+<button class="btn btn-orange" onclick="addDepositTx()">Añadir movimiento</button>
+</div>
+<div class="card" style="overflow-x:auto"><b>Histórico de depósitos</b>
+<table><thead><tr><th>Fecha</th><th>Divisa</th><th>Importe</th><th>TIN</th><th>Nota</th><th></th></tr></thead><tbody id="depTxBody"></tbody></table>
+</div>
+<h2>Evolución desde la primera compra</h2>
+<div class="note">Azul = valor total (acciones a mercado + depósitos con intereses diarios). Naranja = capital neto invertido (compras de acciones + aportaciones netas a depósitos, todo en €). Verde = solo valor de los depósitos.</div>
+<div class="chart-box"><canvas id="valueChart"></canvas></div>
+<h2>Proyecciones</h2>
+<div class="form-row"><div><label>Rentab. %</label><input id="assumedReturn" type="number" value="8" step="0.5" onchange="updateProjections()"></div><div><label>Vol. %</label><input id="assumedVol" type="number" value="18" onchange="updateProjections()"></div></div>
+<div class="form-row"><div><label>Inflación %</label><input id="assumedInflation" type="number" value="2.5" step="0.1" onchange="updateProjections()"></div></div>
+<div class="card" style="overflow-x:auto"><table><thead><tr><th>Horizonte</th><th>Base</th><th>Medio</th><th>Ajust. inflación</th><th>±1σ</th></tr></thead><tbody id="projBody"></tbody></table></div>
+</div>
+<script src="hist.js?v=4"></script>
+<script src="app.js?v=4"></script>
 </body></html>
