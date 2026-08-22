@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Hucha Turbo de Martín</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#0a0f0a;--card:#121a12;--card2:#1a261a;--border:#2a3d2a;--text:#e8f5e8;--muted:#8fa88f;--green:#00c853;--lime:#b2ff59;--orange:#ff6d00}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0a0f0a;color:var(--text);padding:14px;max-width:560px;margin:0 auto;min-height:100vh;background-image:radial-gradient(circle at 20% 20%,rgba(0,200,83,.08),transparent 40%),radial-gradient(circle at 80% 80%,rgba(178,255,89,.05),transparent 40%)}
+h1{font-size:1.55rem;font-weight:800;background:linear-gradient(90deg,var(--lime),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.muted{color:var(--muted);font-size:.88rem}.header{text-align:center;margin-bottom:14px}.logo{font-size:2.5rem}
+.total-card{background:linear-gradient(145deg,#0d1f12,#122418);border:2px solid var(--green);border-radius:20px;padding:20px 16px;text-align:center;margin-bottom:14px;box-shadow:0 0 28px rgba(0,200,83,.15)}
+.total-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.total-value{font-size:2.55rem;font-weight:800;color:var(--lime);letter-spacing:-1px}
+.benefit{margin-top:10px;font-size:1.05rem;font-weight:700;color:var(--green)}
+.kpis{display:flex;justify-content:center;gap:16px;margin-top:8px;flex-wrap:wrap;font-size:.88rem;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:12px}
+.card-title{font-weight:700;margin-bottom:10px}
+label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:3px}
+input{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:12px;padding:12px;font-size:1.05rem;font-weight:600}
+.btn{width:100%;background:linear-gradient(135deg,var(--green),#009624);color:#fff;border:none;border-radius:14px;padding:14px;font-size:1.05rem;font-weight:700;cursor:pointer;margin-top:10px}
+.btn-secondary{background:var(--card2);border:1px solid var(--border);color:var(--text)}
+.btn-sm{padding:8px 12px;font-size:.8rem;width:auto}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.chart-box{height:260px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:7px 4px;text-align:right;border-bottom:1px solid var(--border)}th:first-child,td:first-child{text-align:left}
+.hist-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.92rem}
+.lime{color:var(--lime)}.pos{color:var(--green)}
+#loginScreen{max-width:380px;margin:50px auto;background:var(--card);padding:24px;border-radius:18px}#app{display:none}
+.note{font-size:.8rem;color:var(--muted);margin-top:8px;line-height:1.35}
+.forecast-big{font-size:1.45rem;font-weight:800;color:var(--lime)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green);color:#fff;padding:12px 20px;border-radius:24px;font-weight:700;opacity:0;transition:.3s;z-index:20}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style></head>
+<body>
+<div id="loginScreen">
+  <div class="header"><div class="logo">&#127950;&#65039;</div><h1>Hucha Turbo</h1><div class="muted">de Martín · solo familia</div></div>
+  <label>Email</label><input id="loginEmail" type="email" autocomplete="username">
+  <label style="margin-top:8px">Contraseña</label><input id="loginPassword" type="password" autocomplete="current-password">
+  <button class="btn" onclick="doLogin()">Entrar</button>
+  <div id="loginError" style="color:#ff8a80;margin-top:8px"></div>
+</div>
+<div id="app">
+  <div class="header">
+    <div class="logo">&#127950;&#65039;</div>
+    <h1>Hucha Turbo</h1>
+    <div class="muted">de Martín · meta: 18 años · 2 sep 2034</div>
+    <div style="margin-top:8px"><button class="btn-secondary btn-sm" onclick="doLogout()">Salir</button></div>
+  </div>
+  <div class="total-card">
+    <div class="total-label">Tu dinero ahora mismo</div>
+    <div class="total-value" id="totalValue">— €</div>
+    <div class="benefit" id="benefitLine">Beneficio neto: +0,00 €</div>
+    <div class="kpis">
+      <span id="contribLine">Aportado: — €</span>
+      <span id="dailyLine">+0,00 € al día</span>
+      <span id="tinBadge">TIN — %</span>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Meter dinero</div>
+    <div class="row">
+      <div><label>Cantidad (€)</label><input id="addAmount" type="number" step="0.01" min="0" placeholder="10"></div>
+      <div><label>Fecha</label><input id="addDate" type="date"></div>
+    </div>
+    <button class="btn" onclick="addMoney()">¡Meter en la hucha!</button>
+    <div class="note">No hace falta separar lo de Martín y lo de papá/mamá. Se suma todo.</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Evolución: aportado vs intereses</div>
+    <div class="chart-box"><canvas id="evoChart"></canvas></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Meta 18 años (2 sep 2034)</div>
+    <label>Aportación semanal de Martín (€)</label>
+    <input id="weekly" type="number" step="0.5" min="0" value="0" oninput="updateForecast()">
+    <div class="note" id="matchLine">Si él mete 0 €, papás ponen 0 €. Total a la semana: 0 €.</div>
+    <div style="margin-top:12px" class="forecast-big" id="forecastGross">— €</div>
+    <div class="muted" id="forecastSub"></div>
+    <div style="margin-top:10px;overflow-x:auto">
+      <table><thead><tr><th></th><th>Bruto</th><th>Ajust. inflación</th></tr></thead><tbody id="forecastBody"></tbody></table>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div><label>Inflación % (papás)</label><input id="inflation" type="number" step="0.1" value="2.5" onchange="saveSettings();updateForecast()"></div>
+      <div><label>TIN % (papás)</label><input id="tinInput" type="number" step="0.01" value="1.79" onchange="saveTin()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Movimientos</div>
+    <div id="historyList"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const firebaseConfig={apiKey:"AIzaSyCAhTFcJqDtUUjntwrApGGOv7RBRxuqPAw",authDomain:"cartera-membrillo-quinonez.firebaseapp.com",projectId:"cartera-membrillo-quinonez",storageBucket:"cartera-membrillo-quinonez.firebasestorage.app",messagingSenderId:"131713034804",appId:"1:131713034804:web:6cd27c06ec30b4af3d7861"};
+firebase.initializeApp(firebaseConfig);
+const auth=firebase.auth(),db=firebase.firestore();
+const ALLOWED=['martinmembrilloquinonez@gmail.com','javier@doctormembrillo.com','mabel.felicia@gmail.com'];
+const TARGET=new Date(2034,8,2,12,0,0);
+const SEED=[{id:'s1',d:'2026-08-09',a:152,note:'Aportación inicial'},{id:'s2',d:'2026-08-16',a:10,note:'Aportación'}];
+let txs=[],tin=1.79,weekly=0,inflation=2.5,saving=false,evoChart=null;
+function todayISO(){const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0');}
+function daysBetween(a,b){return Math.max(0,Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/86400000));}
+function nid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function fmt(n,dec=2){return (isNaN(n)?0:n).toLocaleString('es-ES',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function contributedOn(dateStr){return txs.filter(t=>t.d<=dateStr).reduce((s,t)=>s+t.a,0);}
+function valueOn(dateStr){return txs.filter(t=>t.d<=dateStr).reduce((s,t)=>s+t.a*(1+(tin/100/365)*daysBetween(t.d,dateStr)),0);}
+function nowValue(){return valueOn(todayISO());}
+function nowContrib(){return contributedOn(todayISO());}
+function nowInterest(){return nowValue()-nowContrib();}
+function chartDates(){const out=[];let d=new Date('2026-08-09T12:00:00');const end=new Date();while(d<=end){out.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+7);}txs.forEach(t=>{if(!out.includes(t.d))out.push(t.d);});const td=todayISO();if(!out.includes(td))out.push(td);out.sort();return out;}
+auth.onAuthStateChanged(async u=>{if(u&&ALLOWED.includes(u.email.toLowerCase())){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';document.getElementById('addDate').value=todayISO();await load();renderAll();}else{if(u){await auth.signOut();document.getElementById('loginError').textContent='Este email no está autorizado';}document.getElementById('loginScreen').style.display='block';document.getElementById('app').style.display='none';}});
+async function doLogin(){const e=document.getElementById('loginEmail').value.trim().toLowerCase();const p=document.getElementById('loginPassword').value;const err=document.getElementById('loginError');err.textContent='';if(!ALLOWED.includes(e)){err.textContent='Email no autorizado';return;}try{await auth.signInWithEmailAndPassword(e,p);}catch(ex){if(ex.code==='auth/user-not-found'){try{await auth.createUserWithEmailAndPassword(e,p);}catch(e2){err.textContent=e2.message;}}else err.textContent=ex.message;}}
+function doLogout(){auth.signOut();}
+async function load(){try{const doc=await db.collection('hucha').doc('martin').get();if(doc.exists){const d=doc.data();if(Array.isArray(d.txs)&&d.txs.length)txs=d.txs;else txs=SEED.slice();if(d.tin!=null)tin=+d.tin;if(d.weekly!=null)weekly=+d.weekly;if(d.inflation!=null)inflation=+d.inflation;}else{txs=SEED.slice();}await save();}catch(e){console.error(e);txs=SEED.slice();toast('Sin nube ahora, datos locales');}}
+async function save(){if(saving)return;saving=true;try{await db.collection('hucha').doc('martin').set({txs,tin,weekly,inflation,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});}catch(e){console.error(e);}saving=false;}
+function renderAll(){const v=nowValue(),c=nowContrib(),i=nowInterest();document.getElementById('totalValue').textContent=fmt(v)+' \u20ac';document.getElementById('benefitLine').textContent='Beneficio neto (intereses): +'+fmt(i)+' \u20ac';document.getElementById('contribLine').textContent='Aportado: '+fmt(c)+' \u20ac';document.getElementById('dailyLine').textContent='+'+fmt(v*(tin/100/365),4)+' \u20ac al d\u00eda';document.getElementById('tinBadge').textContent='TIN '+fmt(tin,2)+' %';document.getElementById('tinInput').value=tin;document.getElementById('weekly').value=weekly||'';document.getElementById('inflation').value=inflation;renderHistory();updateChart();updateForecast();}
+function renderHistory(){const list=document.getElementById('historyList');const rows=txs.slice().sort((a,b)=>b.d.localeCompare(a.d));if(!rows.length){list.innerHTML='<div class="muted">Todav\u00eda no hay movimientos.</div>';return;}list.innerHTML=rows.map(t=>'<div class="hist-item"><div>Ingreso<div class="muted">'+t.d+(t.note?' \u00b7 '+t.note:'')+'</div></div><div class="lime">+'+fmt(t.a)+' \u20ac</div></div>').join('');}
+function updateChart(){const dates=chartDates();const labels=dates.map(d=>new Date(d+'T12:00:00').toLocaleDateString('es-ES',{day:'2-digit',month:'short'}));const aport=dates.map(d=>contributedOn(d));const total=dates.map(d=>valueOn(d));const ctx=document.getElementById('evoChart').getContext('2d');if(evoChart)evoChart.destroy();evoChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'Total con intereses',data:total,borderColor:'#00c853',backgroundColor:'rgba(0,200,83,.12)',fill:true,tension:.2,pointRadius:2},{label:'Aportado',data:aport,borderColor:'#ff6d00',borderDash:[6,4],fill:false,tension:0,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#cfe8cf'}}},scales:{x:{ticks:{color:'#8fa88f',maxTicksLimit:8},grid:{color:'#2a3d2a'}},y:{ticks:{color:'#8fa88f'},grid:{color:'#2a3d2a'}}}}});}
+function weeksToTarget(){const start=new Date();start.setHours(12,0,0,0);return Math.max(0,Math.round((TARGET-start)/86400000)/7);}function yearsToTarget(){return Math.max(0,(TARGET-new Date())/(365.25*86400000));}
+function project(weeklyMartin){const weeklyIn=Math.max(0,weeklyMartin)*2;let value=nowValue();let contrib=nowContrib();const weeks=weeksToTarget();const daily=tin/100/365;for(let w=0;w<weeks;w++){value=value*(1+daily*7);value+=weeklyIn;contrib+=weeklyIn;}const extraDays=Math.round((weeks-Math.floor(weeks))*7);if(extraDays>0)value=value*(1+daily*extraDays);const y=yearsToTarget();const real=value/Math.pow(1+inflation/100,y);return {value,contrib,interest:value-contrib,real,weeks};}
+function updateForecast(){weekly=parseFloat(document.getElementById('weekly').value)||0;inflation=parseFloat(document.getElementById('inflation').value)||2.5;const him=weekly,parents=weekly,tot=him*2;document.getElementById('matchLine').textContent='Él mete '+fmt(him)+' \u20ac \u00b7 pap\u00e1s ponen '+fmt(parents)+' \u20ac \u00b7 total semana '+fmt(tot)+' \u20ac';const withW=project(weekly);const none=project(0);document.getElementById('forecastGross').textContent=fmt(withW.value)+' \u20ac';document.getElementById('forecastSub').textContent='Si mantiene '+fmt(him)+' \u20ac/semana hasta los 18 \u00b7 '+fmt(withW.weeks,0)+' semanas';document.getElementById('forecastBody').innerHTML='<tr><td>Con aportaci\u00f3n semanal</td><td><b>'+fmt(withW.value)+' \u20ac</b></td><td>'+fmt(withW.real)+' \u20ac</td></tr><tr><td>Sin meter m\u00e1s (solo intereses)</td><td>'+fmt(none.value)+' \u20ac</td><td>'+fmt(none.real)+' \u20ac</td></tr><tr><td>Aportado total estimado</td><td>'+fmt(withW.contrib)+' \u20ac</td><td></td></tr><tr><td>Intereses estimados</td><td class="pos">+'+fmt(withW.interest)+' \u20ac</td><td></td></tr>';}
+function addMoney(){const a=parseFloat(document.getElementById('addAmount').value);const d=document.getElementById('addDate').value||todayISO();if(!a||a<=0){toast('Pon una cantidad v\u00e1lida');return;}txs.push({id:nid(),d,a,note:'Aportaci\u00f3n'});document.getElementById('addAmount').value='';save();renderAll();toast('Dentro +'+fmt(a)+' \u20ac');}
+function saveTin(){tin=parseFloat(document.getElementById('tinInput').value)||0;save();renderAll();toast('TIN guardado');}
+function saveSettings(){weekly=parseFloat(document.getElementById('weekly').value)||0;inflation=parseFloat(document.getElementById('inflation').value)||2.5;save();}
+document.getElementById('weekly').addEventListener('change',function(){saveSettings();});
+</script></body></html>
