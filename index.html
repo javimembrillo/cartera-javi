@@ -45,16 +45,17 @@
     .price-row { display: flex; justify-content: space-between; font-size: 0.88rem; margin: 3px 0; }
     .value-eur { font-size: 1.15rem; font-weight: 600; margin-top: 6px; }
     .pos { color: var(--green); }
+    .neg { color: var(--red); }
     input, select { background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; padding: 9px 11px; font-size: 0.9rem; width: 100%; }
     input:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
     label { font-size: 0.78rem; color: var(--muted); display: block; margin-bottom: 3px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
     @media (max-width: 520px) { .form-row { grid-template-columns: 1fr; } }
-    .chart-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; height: 260px; position: relative; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    th, td { padding: 9px 8px; text-align: right; border-bottom: 1px solid var(--border); }
+    .chart-box { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; height: 300px; position: relative; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th, td { padding: 9px 7px; text-align: right; border-bottom: 1px solid var(--border); }
     th:first-child, td:first-child { text-align: left; }
-    th { color: var(--muted); font-weight: 500; font-size: 0.78rem; }
+    th { color: var(--muted); font-weight: 500; font-size: 0.75rem; }
     .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; align-items: flex-end; }
     .note { background: #1c1c28; border-left: 3px solid var(--accent2); padding: 10px 12px; border-radius: 0 8px 8px 0; font-size: 0.82rem; color: var(--muted); margin: 12px 0; }
     .footer { text-align: center; margin-top: 28px; padding-bottom: 40px; font-size: 0.75rem; color: var(--muted); }
@@ -69,6 +70,7 @@
     #loginError { color: var(--red); font-size: 0.85rem; margin-top: 10px; min-height: 20px; }
     #app { display: none; }
     .user-bar { font-size: 0.8rem; color: var(--muted); display: flex; align-items: center; gap: 10px; }
+    .kpi { font-size: 0.9rem; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -106,6 +108,7 @@
     <div class="total-box">
       <div class="total-label">Valor total de la cartera</div>
       <div class="total-value" id="totalValue">— €</div>
+      <div class="kpi" id="plLine"></div>
       <div class="total-sub muted" id="totalSub">Cargando…</div>
     </div>
 
@@ -147,23 +150,46 @@
       </div>
     </div>
 
-    <h2>Evolución del valor total</h2>
+    <h2>Evolución desde el inicio</h2>
+    <div class="note">La gráfica parte de la fecha de la primera compra. Azul = valor de mercado. Naranja = dinero invertido (coste). Si aún no hay historial, configura abajo el inicio y pulsa “Guardar punto” de vez en cuando.</div>
+    <div class="card section-card">
+      <div style="font-weight:600; margin-bottom:10px;">Inicio de la inversión</div>
+      <div class="form-row">
+        <div><label>Fecha primera compra</label><input type="date" id="startDateInput"></div>
+        <div><label>Capital invertido total (€)</label><input type="number" id="investedInput" step="0.01" placeholder="Ej: 18000"></div>
+      </div>
+      <button class="btn btn-secondary" onclick="saveStartSettings()">Guardar inicio / invertido</button>
+    </div>
     <div class="chart-box"><canvas id="valueChart"></canvas></div>
-    <div class="muted" style="margin-bottom:16px;">Pulsa “Guardar punto” para registrar el valor actual en la nube.</div>
+    <div class="muted" style="margin-bottom:16px;">Pulsa “Guardar punto” para añadir el valor de hoy a la gráfica.</div>
 
     <h2>Proyecciones (ilustrativas)</h2>
-    <div class="note">Solo orientativas. No es consejo de inversión.</div>
+    <div class="note">Solo orientativas. La columna ajustada a inflación muestra el poder adquisitivo aproximado (euros de hoy).</div>
     <div class="controls">
-      <div><label>Rentabilidad anual media esperada (%)</label>
+      <div>
+        <label>Rentabilidad anual media (%)</label>
         <input type="number" id="assumedReturn" value="8" step="0.5" style="width:110px;" onchange="updateProjections()">
       </div>
-      <div><label>Volatilidad anual aprox. (%)</label>
+      <div>
+        <label>Volatilidad anual (%)</label>
         <input type="number" id="assumedVol" value="18" step="1" style="width:110px;" onchange="updateProjections()">
+      </div>
+      <div>
+        <label>Inflación anual estimada (%)</label>
+        <input type="number" id="assumedInflation" value="2.5" step="0.1" style="width:110px;" onchange="updateProjections()">
       </div>
     </div>
     <div class="card" style="overflow-x:auto;">
       <table>
-        <thead><tr><th>Horizonte</th><th>Valor base</th><th>Escenario medio</th><th>Rango aprox. (±1σ)</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Horizonte</th>
+            <th>Valor base</th>
+            <th>Escenario medio</th>
+            <th>Ajustado inflación</th>
+            <th>Rango ±1σ</th>
+          </tr>
+        </thead>
         <tbody id="projBody"></tbody>
       </table>
     </div>
@@ -194,6 +220,7 @@ const DEFAULT_HOLDINGS = {
 };
 const DEFAULT_PRICES = { QDVE: 43.31, TSLA: 348.70, VWCE: 165.70, SPCX: 135.00 };
 const DEFAULT_DEPOSITS = { EUR: { principal: 0, tin: 0, lastUpdate: null }, USD: { principal: 0, tin: 0, lastUpdate: null } };
+const DEFAULT_START = '2024-11-01';
 
 let holdings = structuredClone(DEFAULT_HOLDINGS);
 let prices = { ...DEFAULT_PRICES };
@@ -201,6 +228,8 @@ let deposits = structuredClone(DEFAULT_DEPOSITS);
 let eurusd = 1.170;
 let history = [];
 let lastPriceUpdate = 0;
+let startDate = DEFAULT_START;
+let investedEUR = 0;
 let valueChart = null;
 let saving = false;
 
@@ -237,6 +266,17 @@ async function doLogin() {
 
 function doLogout() { auth.signOut(); }
 
+function ensureStartPoint() {
+  const startTs = new Date(startDate + 'T12:00:00').getTime();
+  if (!startTs) return;
+  const hasStart = history.some(h => Math.abs(h.t - startTs) < 36e5 * 24);
+  if (!hasStart) {
+    const inv = investedEUR || 0;
+    history.unshift({ t: startTs, v: inv, inv: inv });
+  }
+  history.sort((a, b) => a.t - b.t);
+}
+
 async function loadFromCloud() {
   try {
     const doc = await db.collection('portfolio').doc('main').get();
@@ -248,7 +288,11 @@ async function loadFromCloud() {
       if (data.eurusd) eurusd = data.eurusd;
       if (data.history) history = data.history;
       if (data.lastPriceUpdate) lastPriceUpdate = data.lastPriceUpdate;
-    } else { await saveToCloud(); }
+      if (data.startDate) startDate = data.startDate;
+      if (typeof data.investedEUR === 'number') investedEUR = data.investedEUR;
+    }
+    ensureStartPoint();
+    if (!doc.exists) await saveToCloud();
   } catch (e) {
     console.error(e);
     alert('Error al cargar datos. Revisa las reglas de Firestore.');
@@ -261,6 +305,7 @@ async function saveToCloud() {
   try {
     await db.collection('portfolio').doc('main').set({
       holdings, prices, deposits, eurusd, history, lastPriceUpdate,
+      startDate, investedEUR,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true });
   } catch (e) { console.error(e); alert('Error al guardar'); }
@@ -270,6 +315,10 @@ async function saveToCloud() {
 function fmt(n, dec = 2) {
   if (isNaN(n)) return '—';
   return n.toLocaleString('es-ES', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+function costEUR(qty, price, currency) {
+  return currency === 'EUR' ? qty * price : qty * price / eurusd;
 }
 
 function getValueEUR(ticker) {
@@ -341,10 +390,19 @@ function renderDeposits() {
 }
 
 function renderTotal() {
-  document.getElementById('totalValue').textContent = fmt(totalEUR()) + ' €';
+  const val = totalEUR();
+  const inv = investedEUR || 0;
+  const pl = val - inv;
+  const pct = inv > 0 ? (pl / inv) * 100 : 0;
+  document.getElementById('totalValue').textContent = fmt(val) + ' €';
+  const cls = pl >= 0 ? 'pos' : 'neg';
+  document.getElementById('plLine').innerHTML =
+    `Invertido: <strong>${fmt(inv)} €</strong> · P/L: <span class="${cls}">${pl >= 0 ? '+' : ''}${fmt(pl)} € (${pct >= 0 ? '+' : ''}${fmt(pct, 1)}%)</span>`;
   const last = lastPriceUpdate ? new Date(lastPriceUpdate).toLocaleString('es-ES') : 'nunca';
   const market = isWallStreetHours() ? '<span class="status-dot dot-green"></span>Mercado abierto' : '<span class="status-dot dot-gray"></span>Mercado cerrado';
   document.getElementById('totalSub').innerHTML = `EUR/USD ≈ ${fmt(eurusd, 4)} · ${market}<br>Últ. FX: ${last}`;
+  document.getElementById('startDateInput').value = startDate || DEFAULT_START;
+  document.getElementById('investedInput').value = inv ? inv.toFixed(2) : '';
 }
 
 function updatePrice(ticker, val) { prices[ticker] = parseFloat(val) || 0; saveToCloud(); renderAll(); }
@@ -357,6 +415,7 @@ function addPurchase() {
   if (!price || price <= 0) { alert('Precio inválido'); return; }
   holdings[t].qty = (holdings[t].qty || 0) + qty;
   prices[t] = price;
+  investedEUR += costEUR(qty, price, holdings[t].currency);
   document.getElementById('addQty').value = '';
   document.getElementById('addPrice').value = '';
   saveToCloud(); renderAll();
@@ -369,6 +428,11 @@ function updateDeposit() {
   const tin = parseFloat(document.getElementById('depTin').value);
   if (isNaN(principal) || principal < 0) { alert('Capital inválido'); return; }
   if (isNaN(tin) || tin < 0) { alert('TIN inválido'); return; }
+  const prev = deposits[key]?.principal || 0;
+  const prevEUR = key === 'EUR' ? prev : prev / eurusd;
+  const nextEUR = key === 'EUR' ? principal : principal / eurusd;
+  const delta = nextEUR - prevEUR;
+  if (delta > 0) investedEUR += delta;
   deposits[key] = { principal, tin, lastUpdate: Date.now() };
   document.getElementById('depPrincipal').value = '';
   document.getElementById('depTin').value = '';
@@ -376,42 +440,103 @@ function updateDeposit() {
   alert(`Depósito ${key} actualizado`);
 }
 
+function saveStartSettings() {
+  const d = document.getElementById('startDateInput').value;
+  const inv = parseFloat(document.getElementById('investedInput').value);
+  if (!d) { alert('Pon una fecha de inicio'); return; }
+  startDate = d;
+  if (!isNaN(inv) && inv >= 0) investedEUR = inv;
+  ensureStartPoint();
+  const startTs = new Date(startDate + 'T12:00:00').getTime();
+  const existing = history.find(h => Math.abs(h.t - startTs) < 36e5 * 24);
+  if (existing) { existing.inv = investedEUR; if (existing.v == null) existing.v = investedEUR; }
+  saveToCloud(); renderAll();
+  alert('Inicio e invertido guardados');
+}
+
 function saveSnapshot() {
-  history.push({ t: Date.now(), v: totalEUR() });
-  if (history.length > 120) history = history.slice(-120);
+  history.push({ t: Date.now(), v: totalEUR(), inv: investedEUR });
+  history.sort((a, b) => a.t - b.t);
+  if (history.length > 200) history = history.slice(-200);
   saveToCloud(); updateChart();
   alert('Punto guardado en la nube');
 }
 
 function updateChart() {
   const ctx = document.getElementById('valueChart').getContext('2d');
-  const labels = history.map(h => new Date(h.t).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }));
-  const data = history.map(h => h.v);
+  ensureStartPoint();
+  const pts = [...history].sort((a, b) => a.t - b.t);
+  if (!pts.length) {
+    pts.push({ t: Date.now(), v: totalEUR(), inv: investedEUR });
+  }
+  const labels = pts.map(h => new Date(h.t).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: '2-digit' }));
+  const values = pts.map(h => h.v);
+  let lastInv = 0;
+  const invs = pts.map(h => {
+    if (typeof h.inv === 'number') lastInv = h.inv;
+    return lastInv;
+  });
   if (valueChart) valueChart.destroy();
   valueChart = new Chart(ctx, {
     type: 'line',
-    data: { labels: labels.length ? labels : ['Ahora'],
-      datasets: [{ label: 'Valor total (€)', data: data.length ? data : [totalEUR()],
-        borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.12)', fill: true, tension: 0.3, pointRadius: 3 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-      scales: { x: { ticks: { color: '#9a9aab', maxTicksLimit: 8 }, grid: { color: '#2e2e3a' } },
-                y: { ticks: { color: '#9a9aab' }, grid: { color: '#2e2e3a' } } } }
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Valor de mercado (€)',
+          data: values,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.12)',
+          fill: true,
+          tension: 0.25,
+          pointRadius: 3
+        },
+        {
+          label: 'Capital invertido (€)',
+          data: invs,
+          borderColor: '#f59e0b',
+          backgroundColor: 'transparent',
+          borderDash: [6, 4],
+          fill: false,
+          tension: 0.1,
+          pointRadius: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: true, labels: { color: '#c8c8d4' } } },
+      scales: {
+        x: { ticks: { color: '#9a9aab', maxTicksLimit: 8 }, grid: { color: '#2e2e3a' } },
+        y: { ticks: { color: '#9a9aab' }, grid: { color: '#2e2e3a' } }
+      }
+    }
   });
 }
 
 function updateProjections() {
   const r = (parseFloat(document.getElementById('assumedReturn').value) || 8) / 100;
   const vol = (parseFloat(document.getElementById('assumedVol').value) || 18) / 100;
+  const inf = (parseFloat(document.getElementById('assumedInflation').value) || 2.5) / 100;
   const base = totalEUR();
-  const horizons = [{ label: '1 día', years: 1/365 }, { label: '1 semana', years: 7/365 },
-    { label: '1 mes', years: 1/12 }, { label: '1 año', years: 1 }, { label: '5 años', years: 5 }, { label: '10 años', years: 10 }];
+  const horizons = [
+    { label: '1 día', years: 1/365 },
+    { label: '1 semana', years: 7/365 },
+    { label: '1 mes', years: 1/12 },
+    { label: '1 año', years: 1 },
+    { label: '5 años', years: 5 },
+    { label: '10 años', years: 10 }
+  ];
   const tbody = document.getElementById('projBody');
   tbody.innerHTML = '';
   horizons.forEach(h => {
     const mean = base * Math.pow(1 + r, h.years);
+    const real = mean / Math.pow(1 + inf, h.years);
     const sigma = base * vol * Math.sqrt(h.years);
     const tr = document.createElement('tr');
     tr.innerHTML = `<td>${h.label}</td><td>${fmt(base)} €</td><td><strong>${fmt(mean)} €</strong></td>
+      <td>${fmt(real)} €</td>
       <td>${fmt(Math.max(0, mean - sigma))} – ${fmt(mean + sigma)} €</td>`;
     tbody.appendChild(tr);
   });
