@@ -21,34 +21,62 @@ function applyFeed(d){
   if(d.updatedAt)lastPriceAt=new Date(d.updatedAt);
   return got;
 }
+async function loadJSON(url){
+  const ctrl=typeof AbortController!=='undefined'?new AbortController():null;
+  const t=setTimeout(function(){try{ctrl&&ctrl.abort();}catch(e){}},10000);
+  try{
+    const r=await fetch(url,{cache:'no-store',signal:ctrl?ctrl.signal:undefined,headers:{'Cache-Control':'no-cache'}});
+    clearTimeout(t);
+    if(!r.ok)throw new Error('http '+r.status);
+    return await r.json();
+  }catch(e){
+    clearTimeout(t);
+    throw e;
+  }
+}
 async function fetchPrices(){
   if(fetching)return false;
   fetching=true;
   setStatus('actualizando\u2026');
+  const stamp=Date.now();
+  const urls=[
+    'prices.json?t='+stamp,
+    'https://raw.githubusercontent.com/javimembrillo/cartera-javi/main/prices.json?t='+stamp,
+    'https://cdn.jsdelivr.net/gh/javimembrillo/cartera-javi@main/prices.json?t='+stamp
+  ];
+  let d=null,src='';
+  for(let i=0;i<urls.length;i++){
+    try{
+      d=await loadJSON(urls[i]);
+      if(d&&d.prices){src=i===0?'Pages':(i===1?'GitHub':'jsDelivr');break;}
+    }catch(e){console.warn('precio fuente',i,e);}
+  }
   try{
-    const r=await fetch('prices.json?t='+Date.now(),{cache:'no-store'});
-    if(!r.ok)throw new Error('http '+r.status);
-    const d=await r.json();
+    if(!d||!d.prices)throw new Error('sin fuentes');
     const got=applyFeed(d);
     const when=lastPriceAt?lastPriceAt.toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
-    setStatus((got?got+'/4 ok':'0/4')+' \u00b7 '+when+' \u00b7 GitHub');
+    setStatus((got?got+'/4 ok':'0/4')+' \u00b7 '+when+' \u00b7 '+src);
     if(got&&typeof save==='function'){try{await save();}catch(e){}}
     if(typeof renderAll==='function'){try{renderAll();}catch(e){console.error(e);}}
     fetching=false;
     return got>0;
   }catch(e){
     console.error(e);
-    setStatus('error prices.json');
+    setStatus('error precios');
     fetching=false;
     return false;
   }
 }
 async function manualRefresh(){
+  fetching=false;
   await fetchPrices();
   if(typeof fetchFX==='function'){try{await fetchFX();}catch(e){}}
 }
 function startPriceLoop(){
-  if(priceLoopStarted)return;
+  if(priceLoopStarted){
+    fetchPrices();
+    return;
+  }
   priceLoopStarted=true;
   fetchPrices();
   setInterval(function(){fetchPrices();},60*1000);
