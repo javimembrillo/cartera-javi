@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cartera Javi · v7</title>
+<title>Cartera Javi · v8</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -15,7 +15,8 @@
 h1{font-size:1.35rem}h2{font-size:1.05rem;margin:22px 0 10px}.muted{color:var(--muted);font-size:.85rem}
 .header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .total-box{background:linear-gradient(135deg,#1e3a5f,#1a1a2e);border:1px solid var(--border);border-radius:16px;padding:16px 20px}
-.total-value{font-size:1.95rem;font-weight:700}.kpi{margin-top:8px;font-size:.9rem}
+.day-box{margin:12px 0 18px;background:linear-gradient(135deg,#16301c,#1a1a21);border:1px solid #2a4633;border-radius:16px;padding:16px 20px}
+.total-value{font-size:1.95rem;font-weight:700}.day-val{font-size:1.65rem;font-weight:700}.kpi{margin-top:8px;font-size:.9rem}
 .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer}
 .btn-secondary{background:var(--card2);border:1px solid var(--border);color:var(--text)}.btn-sm{padding:6px 12px;font-size:.8rem}.btn-orange{background:var(--orange)}
 .btn-danger{background:#7f1d1d;color:#fecaca;border:none;border-radius:8px;padding:4px 8px;font-size:.75rem;cursor:pointer}
@@ -42,6 +43,7 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 <div class="header"><div><h1>Cartera Javi</h1><div class="muted" id="userEmail"></div></div>
 <div><button class="btn btn-secondary btn-sm" onclick="saveSnapshot()">Guardar punto</button> <button class="btn btn-sm" onclick="manualRefresh()">Actualizar precios</button> <button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button></div></div>
 <div class="total-box"><div class="muted">Valor total (acciones + depósitos)</div><div class="total-value" id="totalValue">— €</div><div class="kpi" id="plLine"></div><div class="muted" id="totalSub"></div></div>
+<div class="day-box"><div class="muted">Beneficio desde el cierre anterior</div><div class="day-val" id="dayPl">—</div><div class="muted" id="daySub"></div></div>
 <h2>Acciones y ETFs</h2><div class="grid" id="holdingsGrid"></div>
 <div class="card"><b>Añadir compra</b>
 <div class="form-row"><div><label>Activo</label><select id="addTicker"><option>TSLA</option><option>SPCX</option><option>QDVE</option><option>VWCE</option></select></div><div><label>Cantidad</label><input id="addQty" type="number" step="any"></div></div>
@@ -66,12 +68,14 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 <h2>Evolución desde la primera compra</h2>
 <div class="note">Azul = valor total (acciones a mercado + depósitos con intereses diarios). Naranja = capital neto invertido (compras de acciones + aportaciones netas a depósitos, todo en €). Verde = solo valor de los depósitos.</div>
 <div class="chart-box"><canvas id="valueChart"></canvas></div>
+<h2>Evolución última semana</h2>
+<div class="chart-box"><canvas id="weekChartCanvas"></canvas></div>
 <h2>Proyecciones</h2>
 <div class="form-row"><div><label>Rentab. %</label><input id="assumedReturn" type="number" value="8" step="0.5" onchange="updateProjections()"></div><div><label>Vol. %</label><input id="assumedVol" type="number" value="18" onchange="updateProjections()"></div></div>
 <div class="form-row"><div><label>Inflación %</label><input id="assumedInflation" type="number" value="2.5" step="0.1" onchange="updateProjections()"></div></div>
 <div class="card" style="overflow-x:auto"><table><thead><tr><th>Horizonte</th><th>Base</th><th>Medio</th><th>Ajust. inflación</th><th>±1σ</th></tr></thead><tbody id="projBody"></tbody></table></div>
 </div>
-<script src="hist.js?v=7"></script>
-<script src="app.js?v=7"></script>
-<script src="prices.js?v=7"></script>
+<script src="hist.js?v=8"></script>
+<script src="app.js?v=8"></script>
+<script src="prices.js?v=8"></script>
 </body></html>
