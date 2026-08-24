@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cartera Javi · v4</title>
+<title>Cartera Javi · v5</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -40,7 +40,7 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 <button class="btn" style="width:100%;margin-top:12px" onclick="doLogin()">Entrar</button><div id="loginError" class="neg"></div></div>
 <div id="app">
 <div class="header"><div><h1>Cartera Javi</h1><div class="muted" id="userEmail"></div></div>
-<div><button class="btn btn-secondary btn-sm" onclick="saveSnapshot()">Guardar punto</button> <button class="btn btn-sm" onclick="manualRefresh()">Actualizar FX</button> <button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button></div></div>
+<div><button class="btn btn-secondary btn-sm" onclick="saveSnapshot()">Guardar punto</button> <button class="btn btn-sm" onclick="manualRefresh()">Actualizar precios</button> <button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button></div></div>
 <div class="total-box"><div class="muted">Valor total (acciones + depósitos)</div><div class="total-value" id="totalValue">— €</div><div class="kpi" id="plLine"></div><div class="muted" id="totalSub"></div></div>
 <h2>Acciones y ETFs</h2><div class="grid" id="holdingsGrid"></div>
 <div class="card"><b>Añadir compra</b>
@@ -71,6 +71,7 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 <div class="form-row"><div><label>Inflación %</label><input id="assumedInflation" type="number" value="2.5" step="0.1" onchange="updateProjections()"></div></div>
 <div class="card" style="overflow-x:auto"><table><thead><tr><th>Horizonte</th><th>Base</th><th>Medio</th><th>Ajust. inflación</th><th>±1σ</th></tr></thead><tbody id="projBody"></tbody></table></div>
 </div>
-<script src="hist.js?v=4"></script>
-<script src="app.js?v=4"></script>
+<script src="hist.js?v=5"></script>
+<script src="app.js?v=5"></script>
+<script src="prices.js?v=5"></script>
 </body></html>
