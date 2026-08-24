@@ -1,8 +1,14 @@
 let lastPriceAt=null,priceStatus='pendiente',priceLoopStarted=false,fetching=false;
 
+function patchPriceStatus(){
+  const el=document.getElementById('totalSub');
+  if(!el)return;
+  const base=(el.textContent||'').replace(/\s*[\u00b7|]\s*Precios:.*$/,'');
+  el.textContent=base+' \u00b7 Precios: '+(priceStatus||'pendiente');
+}
 function setStatus(s){
   priceStatus=s;
-  if(typeof renderAll==='function'){try{renderAll();}catch(e){}}
+  patchPriceStatus();
 }
 function applyFeed(d){
   if(!d||!d.prices)return 0;
@@ -27,31 +33,33 @@ async function fetchPrices(){
     const when=lastPriceAt?lastPriceAt.toLocaleString('es-ES',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}):'';
     setStatus((got?got+'/4 ok':'0/4')+' \u00b7 '+when+' \u00b7 GitHub');
     if(got&&typeof save==='function'){try{await save();}catch(e){}}
+    if(typeof renderAll==='function'){try{renderAll();}catch(e){console.error(e);}}
     fetching=false;
     return got>0;
   }catch(e){
-    setStatus('error leyendo prices.json');
+    console.error(e);
+    setStatus('error prices.json');
     fetching=false;
     return false;
   }
 }
-async function manualRefresh(){await fetchPrices();}
+async function manualRefresh(){
+  await fetchPrices();
+  if(typeof fetchFX==='function'){try{await fetchFX();}catch(e){}}
+}
 function startPriceLoop(){
   if(priceLoopStarted)return;
   priceLoopStarted=true;
-  setTimeout(function(){fetchPrices();},200);
+  fetchPrices();
   setInterval(function(){fetchPrices();},60*1000);
 }
 const _renderTotal=typeof renderTotal==='function'?renderTotal:function(){};
 renderTotal=function(){
   _renderTotal();
-  const el=document.getElementById('totalSub');
-  if(!el)return;
-  const base=(el.textContent||'').replace(/\s*\u00b7\s*Precios:.*$/,'');
-  el.textContent=base+' \u00b7 Precios: '+(priceStatus||'pendiente');
+  patchPriceStatus();
 };
 if(typeof auth!=='undefined'){
   auth.onAuthStateChanged(function(u){
-    if(u&&ALLOWED.indexOf(u.email.toLowerCase())!==-1)startPriceLoop();
+    if(u&&typeof ALLOWED!=='undefined'&&ALLOWED.indexOf((u.email||'').toLowerCase())!==-1)startPriceLoop();
   });
 }
