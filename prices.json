@@ -1,0 +1,16 @@
+{
+  "updatedAt": "2026-08-24T17:15:00Z",
+  "eurusd": 1.1678,
+  "prices": {
+    "TSLA": 355.74,
+    "SPCX": 136.01,
+    "QDVE": 42.52,
+    "VWCE": 165.62
+  },
+  "tickers": {
+    "TSLA": "TSLA",
+    "SPCX": "SPCX",
+    "QDVE": "QDVE.DE",
+    "VWCE": "VWCE.DE"
+  }
+}
