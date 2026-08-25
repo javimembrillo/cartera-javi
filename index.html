@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cartera Javi · v10</title>
+<title>Cartera Javi · v12</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -21,6 +21,7 @@ h1{font-size:1.35rem}h2{font-size:1.05rem;margin:22px 0 10px}.muted{color:var(--
 .btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer}
 .btn-secondary{background:var(--card2);border:1px solid var(--border);color:var(--text)}.btn-sm{padding:6px 12px;font-size:.8rem}.btn-orange{background:var(--orange)}
 .btn-danger{background:#7f1d1d;color:#fecaca;border:none;border-radius:8px;padding:4px 8px;font-size:.75rem;cursor:pointer}
+.btn:disabled{opacity:.7;cursor:wait}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px}
 .price-row{display:flex;justify-content:space-between;font-size:.88rem;margin:3px 0}.value-eur{font-size:1.15rem;font-weight:600;margin-top:6px}
@@ -35,6 +36,8 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 #loginScreen{max-width:380px;margin:60px auto;background:var(--card);padding:28px;border-radius:16px}#app{display:none}
 .edit-price{width:92px;padding:4px 6px;text-align:right}.badge{font-size:.7rem;padding:2px 7px;border-radius:6px;background:var(--card2);color:var(--muted)}
 .badge-dep{background:#3b2f1a;color:#fbbf24}
+.header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+#saveHint{font-size:.75rem;min-height:1em}
 @media(max-width:640px){.form-row-3{grid-template-columns:1fr 1fr}}
 </style></head><body>
 <div id="loginScreen"><h1>Cartera Javi</h1><div class="muted">Acceso restringido</div>
@@ -42,7 +45,14 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 <button class="btn" style="width:100%;margin-top:12px" onclick="doLogin()">Entrar</button><div id="loginError" class="neg"></div></div>
 <div id="app">
 <div class="header"><div><h1>Cartera Javi</h1><div class="muted" id="userEmail"></div></div>
-<div><button class="btn btn-secondary btn-sm" onclick="saveSnapshot()">Guardar punto</button> <button class="btn btn-sm" onclick="manualRefresh()">Actualizar precios</button> <button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button></div></div>
+<div class="header-actions">
+<div>
+<button class="btn btn-secondary btn-sm" id="saveSnapBtn" onclick="saveSnapshot()">Guardar punto</button>
+<button class="btn btn-sm" onclick="manualRefresh()">Actualizar precios</button>
+<button class="btn btn-secondary btn-sm" onclick="doLogout()">Salir</button>
+</div>
+<div id="saveHint" class="muted"></div>
+</div></div>
 <div class="total-box"><div class="muted">Valor total (acciones + depósitos)</div><div class="total-value" id="totalValue">— €</div><div class="kpi" id="plLine"></div><div class="muted" id="totalSub"></div></div>
 <div class="day-box"><div class="muted">Beneficio desde el cierre anterior</div><div class="day-val" id="dayPl">calculando…</div><div class="muted" id="daySub"></div></div>
 <h2>Acciones y ETFs</h2><div class="grid" id="holdingsGrid"></div>
@@ -51,7 +61,7 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 <div class="form-row"><div><label>Precio</label><input id="addPrice" type="number" step="any"></div><div><button class="btn" style="width:100%;margin-top:18px" onclick="addPurchase()">Añadir</button></div></div></div>
 <h2>Depósitos</h2><div class="grid" id="depositsGrid"></div>
 <div class="card"><b>Añadir movimiento de depósito</b>
-<div class="muted" style="margin-bottom:8px">Importe positivo = ingreso. Negativo = retiro. La fecha marca cuándo entra en la gráfica.</div>
+<div class="muted" style="margin-bottom:8px">Importe positivo = ingreso. Negativo = retiro. La fecha marca cuándo entra en la gráfica. Al añadir, se guarda solo y también en este dispositivo.</div>
 <div class="form-row-3">
 <div><label>Depósito</label><select id="depSelect"><option value="EUR">EUR</option><option value="USD">USD</option></select></div>
 <div><label>Fecha</label><input id="depDate" type="date"></div>
@@ -70,13 +80,14 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 <div class="note">Azul = valor total. Naranja = capital neto invertido. Verde = valor de depósitos.</div>
 <div class="chart-box"><canvas id="valueChart"></canvas></div>
 <h2>Evolución última semana</h2>
+<div class="note">Solo el valor total de la cartera, con la escala ampliada para ver el movimiento de cada día.</div>
 <div class="chart-box"><canvas id="weekChartCanvas"></canvas></div>
 <h2>Proyecciones</h2>
 <div class="form-row"><div><label>Rentab. %</label><input id="assumedReturn" type="number" value="8" step="0.5" onchange="updateProjections()"></div><div><label>Vol. %</label><input id="assumedVol" type="number" value="18" onchange="updateProjections()"></div></div>
 <div class="form-row"><div><label>Inflación %</label><input id="assumedInflation" type="number" value="2.5" step="0.1" onchange="updateProjections()"></div></div>
 <div class="card" style="overflow-x:auto"><table><thead><tr><th>Horizonte</th><th>Base</th><th>Medio</th><th>Ajust. inflación</th><th>±1σ</th></tr></thead><tbody id="projBody"></tbody></table></div>
 </div>
-<script src="hist.js?v=10"></script>
-<script src="app.js?v=10"></script>
-<script src="prices.js?v=10"></script>
+<script src="hist.js?v=12"></script>
+<script src="app.js?v=12"></script>
+<script src="prices.js?v=12"></script>
 </body></html>
