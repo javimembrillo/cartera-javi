@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cartera Javi · v13</title>
+<title>Cartera Javi · v14</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -25,6 +25,7 @@ h1{font-size:1.35rem}h2{font-size:1.05rem;margin:22px 0 10px}.muted{color:var(--
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px}
 .price-row{display:flex;justify-content:space-between;font-size:.88rem;margin:3px 0}.value-eur{font-size:1.15rem;font-weight:600;margin-top:6px}
+.pl-asset{font-size:.88rem;font-weight:600;margin-top:2px}
 .pos{color:var(--green)}.neg{color:var(--red)}
 input,select{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px;width:100%}
 label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:3px}
@@ -102,7 +103,7 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 <div class="form-row"><div><label>Inflación %</label><input id="assumedInflation" type="number" value="2.5" step="0.1" onchange="updateProjections()"></div></div>
 <div class="card" style="overflow-x:auto"><table><thead><tr><th>Horizonte</th><th>Base</th><th>Medio</th><th>Ajust. inflación</th><th>±1σ</th></tr></thead><tbody id="projBody"></tbody></table></div>
 </div>
-<script src="hist.js?v=13"></script>
-<script src="app.js?v=13"></script>
-<script src="prices.js?v=13"></script>
+<script src="hist.js?v=14"></script>
+<script src="app.js?v=14"></script>
+<script src="prices.js?v=14"></script>
 </body></html>

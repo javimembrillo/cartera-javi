@@ -224,15 +224,29 @@ function btcFeesOn(dateStr){let s=0;stockTxs().forEach(function(x){if(x&&x.t==='
 function depNow(){return depValueEUROn(todayISO());}
 function total(){return stocksNow()+btcNow()+depNow();}
 function investedTotal(){return investedStocksEUR+investedBtcEUR+depInvestedEUROn(todayISO());}
+function investedIn(tk){
+  let s=0;
+  stockTxs().forEach(function(x){if(x&&x.t===tk)s+=-toEUR(x.a,x.c,x.d);});
+  return s;
+}
 function renderHoldings(){
   const g=document.getElementById('holdingsGrid');if(!g)return;g.innerHTML='';
   ASSETS.forEach(function(t){
     const h=holdings[t]||{qty:0,currency:CCY[t],name:NAMES[t]};
     const p=prices[t]||0;
     const qDec=t==='BTC'?8:4;
-    const extra=t==='BTC'&&btcFeesOn(todayISO())?'<div class="price-row"><span>Comisiones</span><span class="neg">-'+fmt(btcFeesOn(todayISO()))+' \u20ac</span></div>':'';
+    const val=valEUR(t);
+    const inv=investedIn(t);
+    const pl=val-inv;
+    const pct=inv?pl/inv*100:0;
+    const cls=pl>=0?'pos':'neg';
+    const plTxt=(pl>=0?'+':'')+fmt(pl)+' \u20ac \u00b7 '+(pct>=0?'+':'')+fmt(pct,1)+'%';
+    const hasPos=!!(h.qty||inv);
+    const valueBlock=hasPos
+      ?'<div class="value-eur '+cls+'">'+fmt(val)+' \u20ac</div><div class="pl-asset '+cls+'">'+plTxt+'</div>'
+      :'<div class="value-eur">'+fmt(val)+' \u20ac</div>';
     const c=document.createElement('div');c.className='card';
-    c.innerHTML='<div style="display:flex;justify-content:space-between"><b>'+t+'</b><span class="badge">'+h.currency+'</span></div><div class="muted">'+h.name+'</div><div class="price-row"><span>Cantidad</span><span>'+fmt(h.qty,qDec)+'</span></div><div class="price-row"><span>Precio</span><span><input class="edit-price" type="number" step="any" value="'+p+'" onchange="updatePrice(\''+t+'\',this.value)"> '+(h.currency==='EUR'?'\u20ac':'$')+'</span></div>'+extra+'<div class="value-eur">'+fmt(valEUR(t))+' \u20ac</div>';
+    c.innerHTML='<div style="display:flex;justify-content:space-between"><b>'+t+'</b><span class="badge">'+h.currency+'</span></div><div class="muted">'+h.name+'</div><div class="price-row"><span>Cantidad</span><span>'+fmt(h.qty,qDec)+'</span></div><div class="price-row"><span>Precio</span><span><input class="edit-price" type="number" step="any" value="'+p+'" onchange="updatePrice(\''+t+'\',this.value)"> '+(h.currency==='EUR'?'\u20ac':'$')+'</span></div>'+valueBlock;
     g.appendChild(c);
   });
 }
