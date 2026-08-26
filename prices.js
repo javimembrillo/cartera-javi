@@ -62,7 +62,8 @@ async function fetchPrices(){
     const got=applyFeed(d);
     const when=fmtWhen(lastPriceAt);
     const seen=fmtWhen(lastSeenAt);
-    setStatus((got?got+'/4 ok':'0/4')+' · dato '+when+(seen?' · visto '+seen:'')+' · '+src);
+    const n=(typeof ASSETS!=='undefined'&&ASSETS.length)?ASSETS.length:Object.keys((d&&d.prices)||{}).length||4;
+    setStatus((got?got+'/'+n+' ok':'0/'+n)+' · dato '+when+(seen?' · visto '+seen:'')+' · '+src);
     if(got&&typeof savePricesOnly==='function'){try{await savePricesOnly();}catch(e){}}
     if(typeof renderAll==='function'){try{renderAll();}catch(e){console.error(e);}}
     fetching=false;

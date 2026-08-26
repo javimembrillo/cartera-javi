@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cartera Javi · v12</title>
+<title>Cartera Javi · v13</title>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -53,12 +53,27 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 </div>
 <div id="saveHint" class="muted"></div>
 </div></div>
-<div class="total-box"><div class="muted">Valor total (acciones + depósitos)</div><div class="total-value" id="totalValue">— €</div><div class="kpi" id="plLine"></div><div class="muted" id="totalSub"></div></div>
+<div class="total-box"><div class="muted">Valor total (acciones + bitcoin + depósitos)</div><div class="total-value" id="totalValue">— €</div><div class="kpi" id="plLine"></div><div class="muted" id="totalSub"></div></div>
 <div class="day-box"><div class="muted">Beneficio desde el cierre anterior</div><div class="day-val" id="dayPl">calculando…</div><div class="muted" id="daySub"></div></div>
-<h2>Acciones y ETFs</h2><div class="grid" id="holdingsGrid"></div>
+<h2>Acciones, ETFs y Bitcoin</h2><div class="grid" id="holdingsGrid"></div>
 <div class="card"><b>Añadir compra</b>
 <div class="form-row"><div><label>Activo</label><select id="addTicker"><option>TSLA</option><option>SPCX</option><option>QDVE</option><option>VWCE</option></select></div><div><label>Cantidad</label><input id="addQty" type="number" step="any"></div></div>
 <div class="form-row"><div><label>Precio</label><input id="addPrice" type="number" step="any"></div><div><button class="btn" style="width:100%;margin-top:18px" onclick="addPurchase()">Añadir</button></div></div></div>
+<div class="card"><b>Añadir Bitcoin</b>
+<div class="muted" style="margin-bottom:8px">Cantidad en BTC y comisión en euros. La comisión no compra bitcoin: se anota como coste y resta del P/L global.</div>
+<div class="form-row-3">
+<div><label>Fecha</label><input id="btcDate" type="date"></div>
+<div><label>Cantidad BTC</label><input id="btcQty" type="number" step="any" placeholder="0,01000000"></div>
+<div><label>Precio € / BTC</label><input id="btcPrice" type="number" step="any" placeholder="vacío = precio vivo"></div>
+</div>
+<div class="form-row">
+<div><label>Comisión de compra €</label><input id="btcFee" type="number" step="any" placeholder="0"></div>
+<div><button class="btn btn-orange" style="width:100%;margin-top:18px" onclick="addBtc()">Añadir Bitcoin</button></div>
+</div>
+</div>
+<div class="card" style="overflow-x:auto"><b>Movimientos Bitcoin</b>
+<table><thead><tr><th>Fecha</th><th>Tipo</th><th>BTC</th><th>Euros</th><th></th></tr></thead><tbody id="btcTxBody"></tbody></table>
+</div>
 <h2>Depósitos</h2><div class="grid" id="depositsGrid"></div>
 <div class="card"><b>Añadir movimiento de depósito</b>
 <div class="muted" style="margin-bottom:8px">Importe positivo = ingreso. Negativo = retiro. La fecha marca cuándo entra en la gráfica. Al añadir, se guarda solo y también en este dispositivo.</div>
@@ -87,7 +102,7 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 <div class="form-row"><div><label>Inflación %</label><input id="assumedInflation" type="number" value="2.5" step="0.1" onchange="updateProjections()"></div></div>
 <div class="card" style="overflow-x:auto"><table><thead><tr><th>Horizonte</th><th>Base</th><th>Medio</th><th>Ajust. inflación</th><th>±1σ</th></tr></thead><tbody id="projBody"></tbody></table></div>
 </div>
-<script src="hist.js?v=12"></script>
-<script src="app.js?v=12"></script>
-<script src="prices.js?v=12"></script>
+<script src="hist.js?v=13"></script>
+<script src="app.js?v=13"></script>
+<script src="prices.js?v=13"></script>
 </body></html>

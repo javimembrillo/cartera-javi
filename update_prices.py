@@ -8,6 +8,7 @@ TICK = {
     "SPCX": "SPCX",
     "QDVE": "QDVE.DE",
     "VWCE": "VWCE.DE",
+    "BTC": "BTC-EUR",
 }
 
 def get(url):
@@ -65,9 +66,10 @@ def main():
     for k, s in TICK.items():
         try:
             px, series = yahoo_chart(s)
-            prices[k] = round(px, 4)
+            dec = 2 if k == "BTC" else 4
+            prices[k] = round(px, dec)
             for day, val in series:
-                daily[day][k] = round(val, 4)
+                daily[day][k] = round(val, dec)
             print("OK", k, prices[k], "dias", len(series))
         except Exception as e:
             errors[k] = str(e)
