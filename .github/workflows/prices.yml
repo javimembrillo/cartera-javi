@@ -2,8 +2,15 @@ name: Actualizar precios
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 5-21 * * 1-5"
-    - cron: "0 10 * * 6,0"
+    # 02:00 CEST (verano UTC+2) = 00:05 UTC — cierre after-hours USA
+    - cron: "5 0 * * *"
+    # 02:00 CET (invierno UTC+1) = 01:05 UTC
+    - cron: "5 1 * * *"
+    # Laborables cada hora, minuto 13, 07:00-23:00 CEST (05-21 UTC)
+    # (GitHub descarta el cron */15 por saturación; por eso esta mañana no corrió)
+    - cron: "13 5-21 * * 1-5"
+    # Finde: BTC a mediodía y noche España
+    - cron: "13 10,18 * * 6,0"
 permissions:
   contents: write
 concurrency:
@@ -14,7 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fetch Yahoo prices
+        with:
+          fetch-depth: 0
+      - name: Fetch market prices
         run: python3 update_prices.py
       - name: Commit prices.json
         run: |
@@ -26,5 +35,5 @@ jobs:
             exit 0
           fi
           git commit -m "chore: actualizar prices.json"
-          git pull --rebase origin main || true
+          git pull --rebase origin main
           git push
