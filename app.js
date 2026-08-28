@@ -229,6 +229,34 @@ function investedIn(tk){
   stockTxs().forEach(function(x){if(x&&x.t===tk)s+=-toEUR(x.a,x.c,x.d);});
   return s;
 }
+function qtyOn(tk,dateStr){
+  let q=0;
+  stockTxs().forEach(function(x){if(x&&x.t===tk&&x.d&&x.d<=dateStr)q+=x.q;});
+  return q;
+}
+function investedInOn(tk,dateStr){
+  let s=0;
+  stockTxs().forEach(function(x){if(x&&x.t===tk&&x.d&&x.d<=dateStr)s+=-toEUR(x.a,x.c,x.d);});
+  return s;
+}
+function valOn(tk,dateStr,live){
+  const q=qtyOn(tk,dateStr);
+  if(!q)return 0;
+  const p=pxOn(tk,dateStr,live);
+  if(p==null)return null;
+  return CCY[tk]==='EUR'?q*p:q*p/fxOn(dateStr);
+}
+function dayMoveAsset(tk){
+  const prevD=prevCloseISO();
+  const valPrev=valOn(tk,prevD,false);
+  if(valPrev==null)return null;
+  const invPrev=investedInOn(tk,prevD);
+  const valNow=valEUR(tk);
+  const invNow=investedIn(tk);
+  const dayPl=(valNow-invNow)-(valPrev-invPrev);
+  const pct=valPrev?dayPl/valPrev*100:0;
+  return {dayPl:dayPl,pct:pct,prevD:prevD,valPrev:valPrev};
+}
 function renderHoldings(){
   const g=document.getElementById('holdingsGrid');if(!g)return;g.innerHTML='';
   ASSETS.forEach(function(t){
@@ -240,10 +268,19 @@ function renderHoldings(){
     const pl=val-inv;
     const pct=inv?pl/inv*100:0;
     const cls=pl>=0?'pos':'neg';
-    const plTxt=(pl>=0?'+':'')+fmt(pl)+' \u20ac \u00b7 '+(pct>=0?'+':'')+fmt(pct,1)+'%';
+    const plTxt='Total '+(pl>=0?'+':'')+fmt(pl)+' \u20ac \u00b7 '+(pct>=0?'+':'')+fmt(pct,1)+'%';
     const hasPos=!!(h.qty||inv);
+    let dayHtml='';
+    if(hasPos){
+      const dm=dayMoveAsset(t);
+      if(dm){
+        const dcls=dm.dayPl>=0?'pos':'neg';
+        const dTxt=(dm.dayPl>=0?'+':'')+fmt(dm.dayPl)+' \u20ac \u00b7 '+(dm.pct>=0?'+':'')+fmt(dm.pct,1)+'%';
+        dayHtml='<div class="pl-day"><span class="muted">Hoy</span><span class="'+dcls+'">'+dTxt+'</span></div>';
+      }
+    }
     const valueBlock=hasPos
-      ?'<div class="value-eur '+cls+'">'+fmt(val)+' \u20ac</div><div class="pl-asset '+cls+'">'+plTxt+'</div>'
+      ?'<div class="value-eur '+cls+'">'+fmt(val)+' \u20ac</div><div class="pl-asset '+cls+'">'+plTxt+'</div>'+dayHtml
       :'<div class="value-eur">'+fmt(val)+' \u20ac</div>';
     const c=document.createElement('div');c.className='card';
     c.innerHTML='<div style="display:flex;justify-content:space-between"><b>'+t+'</b><span class="badge">'+h.currency+'</span></div><div class="muted">'+h.name+'</div><div class="price-row"><span>Cantidad</span><span>'+fmt(h.qty,qDec)+'</span></div><div class="price-row"><span>Precio</span><span><input class="edit-price" type="number" step="any" value="'+p+'" onchange="updatePrice(\''+t+'\',this.value)"> '+(h.currency==='EUR'?'\u20ac':'$')+'</span></div>'+valueBlock;
