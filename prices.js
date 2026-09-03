@@ -1,8 +1,9 @@
-let lastPriceAt=null,lastSeenAt=null,priceStatus='pendiente',priceLoopStarted=false,fetching=false,fetchStarted=0,lastLiveAt=0,preLive=null;
+let lastPriceAt=null,lastSeenAt=null,priceStatus='pendiente',priceLoopStarted=false,fetching=false,fetchStarted=0,lastLiveAt=0;
 
 const LIVE_TICK={TSLA:'TSLA',SPCX:'SPCX',QDVE:'QDVE.DE',VWCE:'VWCE.DE',BTC:'BTC-EUR'};
 const SPARK='https://query1.finance.yahoo.com/v7/finance/spark?symbols=TSLA,SPCX,QDVE.DE,VWCE.DE,BTC-EUR&range=1d&interval=1d';
 const SYM={'TSLA':'TSLA','SPCX':'SPCX','QDVE.DE':'QDVE','VWCE.DE':'VWCE','BTC-EUR':'BTC'};
+const REFRESH_MS=15*60*1000;
 
 function patchPriceStatus(){
   const el=document.getElementById('totalSub');
@@ -109,31 +110,27 @@ async function firstOk(fns){
 async function yahooSpark(){
   const enc=encodeURIComponent(SPARK);
   return firstOk([
-    function(){return loadJSON('https://api.allorigins.win/get?url='+enc,7000).then(parseSpark);},
-    function(){return jsonp('https://api.allorigins.win/get?url='+enc,8000).then(parseSpark);},
-    function(){return loadJSON('https://api.allorigins.win/raw?url='+enc,7000).then(parseSpark);},
-    function(){return loadJSON('https://corsproxy.io/?url='+enc,6000).then(parseSpark);},
-    function(){return jsonp('https://jsonp.afeld.me/?url='+enc,8000).then(parseSpark);},
-    function(){return loadJSON(SPARK,5000).then(parseSpark);}
+    function(){return loadJSON('https://api.allorigins.win/get?url='+enc,4000).then(parseSpark);},
+    function(){return jsonp('https://api.allorigins.win/get?url='+enc,4000).then(parseSpark);},
+    function(){return loadJSON(SPARK,3500).then(parseSpark);}
   ]);
 }
 async function yahooOne(k, symbol){
   const y='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(symbol)+'?interval=1d&range=1d';
   const enc=encodeURIComponent(y);
   return firstOk([
-    function(){return loadJSON('https://api.allorigins.win/raw?url='+enc,6000).then(function(d){return parseChart(d,k);});},
-    function(){return jsonp('https://api.allorigins.win/get?url='+enc,7000).then(function(d){return parseChart(d,k);});},
-    function(){return loadJSON(y,4000).then(function(d){return parseChart(d,k);});}
+    function(){return loadJSON('https://api.allorigins.win/raw?url='+enc,3500).then(function(d){return parseChart(d,k);});},
+    function(){return jsonp('https://api.allorigins.win/get?url='+enc,4000).then(function(d){return parseChart(d,k);});}
   ]);
 }
 async function btcLive(){
   try{
-    const d=await loadJSON('https://api.coinbase.com/v2/prices/BTC-EUR/spot',5000);
+    const d=await loadJSON('https://api.coinbase.com/v2/prices/BTC-EUR/spot',4000);
     const px=+((d.data||{}).amount);
     if(px>0)return px;
   }catch(e){}
   try{
-    const d=await loadJSON('https://api.kraken.com/0/public/Ticker?pair=XBTEUR',5000);
+    const d=await loadJSON('https://api.kraken.com/0/public/Ticker?pair=XBTEUR',4000);
     const px=+((((d.result||{}).XXBTZEUR||{}).c)||[])[0];
     if(px>0)return px;
   }catch(e){}
@@ -141,12 +138,12 @@ async function btcLive(){
 }
 async function fxLive(){
   try{
-    const d=await loadJSON('https://api.frankfurter.app/latest?from=EUR&to=USD',5000);
+    const d=await loadJSON('https://api.frankfurter.app/latest?from=EUR&to=USD',4000);
     const px=+((d.rates||{}).USD);
     if(px>0)return px;
   }catch(e){}
   try{
-    const d=await loadJSON('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json',5000);
+    const d=await loadJSON('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.json',4000);
     const px=+((d.eur||{}).usd);
     if(px>0)return px;
   }catch(e){}
@@ -176,8 +173,6 @@ async function fetchLiveOverlay(){
   }catch(e){}
   return got;
 }
-fetchLiveOverlay().then(function(x){if(x&&Object.keys(x).length)preLive=x;}).catch(function(){});
-
 async function loadPricesFile(){
   const stamp=Date.now();
   const urls=['prices.json?t='+stamp,'https://raw.githubusercontent.com/javimembrillo/cartera-javi/main/prices.json?t='+stamp];
@@ -192,38 +187,37 @@ async function loadPricesFile(){
 function paintStatus(fileGot, liveGot, src){
   const n=(typeof ASSETS!=='undefined'&&ASSETS.length)?ASSETS.length:5;
   const when=fmtWhen(lastPriceAt);
-  const label=liveGot?(liveGot+'/'+n+' en vivo'):(fileGot?fileGot+'/'+n+' archivo':'sin dato');
+  const label=liveGot?(liveGot+'/'+n+' mercado'):(fileGot?fileGot+'/'+n+' archivo':'sin dato');
   setStatus(label+' · '+when+(src?' · '+src:''));
+}
+function paintNow(fileGot, liveGot, src){
+  paintStatus(fileGot, liveGot, src);
+  if(typeof renderAll==='function'){try{renderAll();}catch(e){console.error(e);}}
 }
 async function fetchPrices(opts){
   if(fetching && Date.now()-fetchStarted<20000)return false;
   fetching=true;
   fetchStarted=Date.now();
-  setStatus('actualizando…');
-  const wantLive=!(opts&&opts.live===false);
-  let file=null, live={}, src='';
-  const fileP=loadPricesFile();
-  const liveP=wantLive?fetchLiveOverlay():Promise.resolve({});
-  try{file=await fileP;}catch(e){}
-  try{live=await liveP;}catch(e){console.warn('live',e);}
-  let fileGot=0, liveGot=0;
+  const wantLive=!!(opts&&opts.live);
+  setStatus(wantLive?'consultando mercado…':'cargando archivo…');
+  let file=null, src='', fileGot=0, liveGot=0;
+  try{file=await loadPricesFile();}catch(e){}
   if(file&&file.d){fileGot=applyFeed(file.d);src=file.src;}
-  if(preLive){liveGot=Math.max(liveGot, applyLive(preLive));preLive=null;}
-  liveGot=Math.max(liveGot, applyLive(live));
-  if(liveGot) src=(src?src+' + ':'')+'vivo';
-  try{
-    if(!fileGot&&!liveGot)throw new Error('sin fuentes');
-    paintStatus(fileGot, liveGot, src);
-    if((fileGot||liveGot)&&typeof savePricesOnly==='function'){try{await savePricesOnly();}catch(e){}}
-    if(typeof renderAll==='function'){try{renderAll();}catch(e){console.error(e);}}
-    fetching=false;
-    return true;
-  }catch(e){
-    console.error(e);
+  if(fileGot) paintNow(fileGot, 0, src);
+  if(wantLive){
+    let live={};
+    try{live=await fetchLiveOverlay();}catch(e){console.warn('live',e);}
+    liveGot=applyLive(live);
+    if(liveGot) src=(src?src+' + ':'')+'mercado';
+  }
+  fetching=false;
+  if(!fileGot&&!liveGot){
     setStatus('error precios');
-    fetching=false;
     return false;
   }
+  paintNow(fileGot, liveGot, src);
+  if((fileGot||liveGot)&&typeof savePricesOnly==='function'){try{await savePricesOnly();}catch(e){}}
+  return true;
 }
 async function manualRefresh(){
   fetching=false;
@@ -231,14 +225,13 @@ async function manualRefresh(){
   if(!ok) setStatus((priceStatus||'error')+' · reintenta');
 }
 function startPriceLoop(){
-  if(preLive){applyLive(preLive);if(typeof renderAll==='function')try{renderAll();}catch(e){}}
-  if(priceLoopStarted){fetchPrices({live:true});return;}
+  if(priceLoopStarted){
+    fetchPrices({live:false});
+    return;
+  }
   priceLoopStarted=true;
-  fetchPrices({live:true});
-  setInterval(function(){fetchPrices({live:true});},45*1000);
-  document.addEventListener('visibilitychange', function(){
-    if(!document.hidden) fetchPrices({live:true});
-  });
+  fetchPrices({live:false});
+  setInterval(function(){fetchPrices({live:true});}, REFRESH_MS);
 }
 const _renderTotal=typeof renderTotal==='function'?renderTotal:function(){};
 renderTotal=function(){_renderTotal();patchPriceStatus();};
