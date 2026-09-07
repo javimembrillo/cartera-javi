@@ -63,6 +63,22 @@ def yahoo_chart(symbol):
             last = e
     raise last if last else RuntimeError("yahoo fail " + symbol)
 
+def stooq_last(symbol):
+    url = "https://stooq.com/q/l/?s=%s&i=d" % symbol
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        line = r.read().decode().strip().splitlines()[0]
+    parts = line.split(",")
+    px = float(parts[6])
+    if px <= 0:
+        raise RuntimeError("stooq precio invalido " + symbol)
+    return px
+
+STOOQ_TICK = {
+    "TSLA": "tsla.us",
+    "SPCX": "spcx.us",
+}
+
 def btc_fallback():
     try:
         j = get_json("https://api.kraken.com/0/public/Ticker?pair=XBTEUR")
@@ -108,24 +124,38 @@ def main():
                 daily[day].update(ticks)
 
     for k, s in TICK.items():
+        got = False
         try:
             px, series = yahoo_chart(s)
             dec = 2 if k == "BTC" else 4
             prices[k] = round(px, dec)
             for day, val in series:
                 daily[day][k] = round(val, dec)
-            print("OK", k, prices[k], "dias", len(series))
+            print("OK yahoo", k, prices[k], "dias", len(series))
+            got = True
         except Exception as e:
-            if k == "BTC":
-                try:
-                    px = btc_fallback()
-                    prices[k] = round(px, 2)
-                    print("OK BTC fallback", prices[k])
-                    continue
-                except Exception as e2:
-                    e = e2
+            print("FAIL yahoo", k, e)
             errors[k] = str(e)
-            print("FAIL", k, e)
+        if not got and k in STOOQ_TICK:
+            try:
+                px = stooq_last(STOOQ_TICK[k])
+                dec = 2 if k == "BTC" else 4
+                prices[k] = round(px, dec)
+                print("OK stooq", k, prices[k])
+                errors.pop(k, None)
+                got = True
+            except Exception as e:
+                print("FAIL stooq", k, e)
+        if not got and k == "BTC":
+            try:
+                px = btc_fallback()
+                prices[k] = round(px, 2)
+                print("OK BTC fallback", prices[k])
+                errors.pop(k, None)
+                got = True
+            except Exception as e:
+                errors[k] = str(e)
+                print("FAIL BTC fallback", e)
 
     try:
         eurusd = round(fx_eurusd(), 6)
@@ -144,6 +174,7 @@ def main():
 
     out = {
         "updatedAt": now_utc().replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "checkedAt": now_utc().replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "eurusd": eurusd,
         "prices": prices,
         "daily": daily_out,

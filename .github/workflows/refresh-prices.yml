@@ -28,14 +28,18 @@ jobs:
       - name: Actualizar cotizaciones
         run: python update_prices.py
 
-      - name: Guardar precios si han cambiado
+      - name: Comprobar permisos de escritura
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add prices.json
           if git diff --cached --quiet; then
-            echo "No hay cambios en prices.json"
+            echo "Sin cambios que guardar"
             exit 0
           fi
           git commit -m "chore: actualizar precios"
-          git push
+          if ! git push; then
+            echo "::error::No se pudo publicar prices.json. Revisa Settings > Actions > General > Workflow permissions y marca 'Read and write permissions'."
+            exit 1
+          fi
+          echo "Publicado correctamente"
