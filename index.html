@@ -1,51 +1,4 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cartera Javi · v17</title>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<style>
-:root{--bg:#0f0f12;--card:#1a1a21;--card2:#22222b;--border:#2e2e3a;--text:#f0f0f5;--muted:#9a9aab;--green:#22c55e;--red:#ef4444;--accent:#3b82f6;--orange:#f59e0b;--teal:#14b8a6}
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding:12px;max-width:960px;margin:0 auto}
-h1{font-size:1.35rem}h2{font-size:1.05rem;margin:22px 0 10px}.muted{color:var(--muted);font-size:.85rem}
-.header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-.total-box{background:linear-gradient(135deg,#1e3a5f,#1a1a2e);border:1px solid var(--border);border-radius:16px;padding:16px 20px}
-.day-box{margin:12px 0 18px;background:linear-gradient(135deg,#16301c,#1a1a21);border:1px solid #2a4633;border-radius:16px;padding:16px 20px}
-.total-value{font-size:1.95rem;font-weight:700}.day-val{font-size:1.65rem;font-weight:700;min-height:2rem}.kpi{margin-top:8px;font-size:.9rem}
-.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer}
-.btn-secondary{background:var(--card2);border:1px solid var(--border);color:var(--text)}.btn-sm{padding:6px 12px;font-size:.8rem}.btn-orange{background:var(--orange)}
-.btn-danger{background:#7f1d1d;color:#fecaca;border:none;border-radius:8px;padding:4px 8px;font-size:.75rem;cursor:pointer}
-.btn:disabled{opacity:.7;cursor:wait}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
-.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px}
-.price-row{display:flex;justify-content:space-between;font-size:.88rem;margin:3px 0}.value-eur{font-size:1.15rem;font-weight:600;margin-top:6px}
-.pl-asset{font-size:.88rem;font-weight:600;margin-top:2px}.pl-day{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:.88rem;font-weight:700}.pl-day .muted{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
-.pos{color:var(--green)}.neg{color:var(--red)}
-input,select{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px;width:100%}
-label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:3px}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
-.chart-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;height:320px;position:relative}
-table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;text-align:right;border-bottom:1px solid var(--border)}th:first-child,td:first-child{text-align:left}
-.note{background:#1c1c28;border-left:3px solid #8b5cf6;padding:10px;font-size:.82rem;color:var(--muted);margin:12px 0}
-#loginScreen{max-width:380px;margin:60px auto;background:var(--card);padding:28px;border-radius:16px}#app{display:none}
-.edit-price{width:92px;padding:4px 6px;text-align:right}.badge{font-size:.7rem;padding:2px 7px;border-radius:6px;background:var(--card2);color:var(--muted)}
-.badge-dep{background:#3b2f1a;color:#fbbf24}
-.header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-#saveHint{font-size:.75rem;min-height:1em}
-@media(max-width:640px){.form-row-3{grid-template-columns:1fr 1fr}}
-</style></head><body>
-<div id="loginScreen"><h1>Cartera Javi</h1><div class="muted">Acceso restringido</div>
-<label>Email</label><input id="loginEmail" type="email"><label>Contraseña</label><input id="loginPassword" type="password">
-<button class="btn" style="width:100%;margin-top:12px" onclick="doLogin()">Entrar</button><div id="loginError" class="neg"></div></div>
-<div id="app">
-<div class="header"><div><h1>Cartera Javi</h1><div class="muted" id="userEmail"></div></div>
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Cartera Javi v17</title><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script><style>:root{--bg:#0f0f12;--card:#1a1a21;--card2:#22222b;--border:#2e2e3a;--text:#f0f0f5;--muted:#9a9aab;--green:#22c55e;--red:#ef4444;--accent:#3b82f6;--orange:#f59e0b;--teal:#14b8a6}*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding:12px;max-width:960px;margin:0 auto}h1{font-size:1.35rem}h2{font-size:1.05rem;margin:22px 0 10px}.muted{color:var(--muted);font-size:.85rem}.header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.total-box{background:linear-gradient(135deg,#1e3a5f,#1a1a2e);border:1px solid var(--border);border-radius:16px;padding:16px 20px}.day-box{margin:12px 0 18px;background:linear-gradient(135deg,#16301c,#1a1a21);border:1px solid #2a4633;border-radius:16px;padding:16px 20px}.total-value{font-size:1.95rem;font-weight:700}.day-val{font-size:1.65rem;font-weight:700;min-height:2rem}.kpi{margin-top:8px;font-size:.9rem}.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer}.btn-secondary{background:var(--card2);border:1px solid var(--border);color:var(--text)}.btn-sm{padding:6px 12px;font-size:.8rem}.btn-orange{background:var(--orange)}.btn-danger{background:#7f1d1d;color:#fecaca;border:none;border-radius:8px;padding:4px 8px;font-size:.75rem;cursor:pointer}.btn:disabled{opacity:.7;cursor:wait}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px}.price-row{display:flex;justify-content:space-between;font-size:.88rem;margin:3px 0}.value-eur{font-size:1.15rem;font-weight:600;margin-top:6px}.pl-asset{font-size:.88rem;font-weight:600;margin-top:2px}.pl-day{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:.88rem;font-weight:700}.pl-day .muted{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}.pos{color:var(--green)}.neg{color:var(--red)}input,select{background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px;width:100%}label{font-size:.78rem;color:var(--muted);display:block;margin-bottom:3px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}.chart-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;height:320px;position:relative}table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;text-align:right;border-bottom:1px solid var(--border)}th:first-child,td:first-child{text-align:left}.note{background:#1c1c28;border-left:3px solid #8b5cf6;padding:10px;font-size:.82rem;color:var(--muted);margin:12px 0}#loginScreen{max-width:380px;margin:60px auto;background:var(--card);padding:28px;border-radius:16px}#app{display:none}.edit-price{width:92px;padding:4px 6px;text-align:right}.badge{font-size:.7rem;padding:2px 7px;border-radius:6px;background:var(--card2);color:var(--muted)}.badge-dep{background:#3b2f1a;color:#fbbf24}.header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:4px}#saveHint{font-size:.75rem;min-height:1em}@media(max-width:640px){.form-row-3{grid-template-columns:1fr 1fr}}</style></head><body><div id="loginScreen"><h1>Cartera Javi</h1><div class="muted">Acceso restringido</div><label>Email</label><input id="loginEmail" type="email"><label>Contraseña</label><input id="loginPassword" type="password"><button class="btn" style="width:100%;margin-top:12px" onclick="doLogin()">Entrar</button><div id="loginError" class="neg"></div></div><div id="app"><div class="header"><div><h1>Cartera Javi</h1><div class="muted" id="userEmail"></div></div>
 <div class="header-actions">
 <div>
 <button class="btn btn-secondary btn-sm" id="saveSnapBtn" onclick="saveSnapshot()">Guardar punto</button>
@@ -54,56 +7,7 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th,td{padding:8px;tex
 </div>
 <div id="saveHint" class="muted"></div>
 </div></div>
-<div class="total-box"><div class="muted">Valor total (acciones + bitcoin + depósitos)</div><div class="total-value" id="totalValue">— €</div><div class="kpi" id="plLine"></div><div class="muted" id="totalSub"></div></div>
-<div class="day-box"><div class="muted">Beneficio desde el cierre anterior</div><div class="day-val" id="dayPl">calculando…</div><div class="muted" id="daySub"></div></div>
-<h2>Acciones, ETFs y Bitcoin</h2><div class="grid" id="holdingsGrid"></div>
-<div class="card"><b>Añadir compra</b>
-<div class="form-row"><div><label>Activo</label><select id="addTicker"><option>TSLA</option><option>SPCX</option><option>QDVE</option><option>VWCE</option></select></div><div><label>Cantidad</label><input id="addQty" type="number" step="any"></div></div>
-<div class="form-row"><div><label>Precio</label><input id="addPrice" type="number" step="any"></div><div><button class="btn" style="width:100%;margin-top:18px" onclick="addPurchase()">Añadir</button></div></div></div>
-<div class="card"><b>Añadir Bitcoin</b>
-<div class="muted" style="margin-bottom:8px">Cantidad en BTC y comisión en euros. La comisión no compra bitcoin: se anota como coste y resta del P/L global.</div>
-<div class="form-row-3">
-<div><label>Fecha</label><input id="btcDate" type="date"></div>
-<div><label>Cantidad BTC</label><input id="btcQty" type="number" step="any" placeholder="0,01000000"></div>
-<div><label>Precio € / BTC</label><input id="btcPrice" type="number" step="any" placeholder="vacío = precio vivo"></div>
-</div>
-<div class="form-row">
-<div><label>Comisión de compra €</label><input id="btcFee" type="number" step="any" placeholder="0"></div>
-<div><button class="btn btn-orange" style="width:100%;margin-top:18px" onclick="addBtc()">Añadir Bitcoin</button></div>
-</div>
-</div>
-<div class="card" style="overflow-x:auto"><b>Movimientos Bitcoin</b>
-<table><thead><tr><th>Fecha</th><th>Tipo</th><th>BTC</th><th>Euros</th><th></th></tr></thead><tbody id="btcTxBody"></tbody></table>
-</div>
-<h2>Depósitos</h2><div class="grid" id="depositsGrid"></div>
-<div class="card"><b>Añadir movimiento de depósito</b>
-<div class="muted" style="margin-bottom:8px">Importe positivo = ingreso. Negativo = retiro. La fecha marca cuándo entra en la gráfica. Al añadir, se guarda solo y también en este dispositivo.</div>
-<div class="form-row-3">
-<div><label>Depósito</label><select id="depSelect"><option value="EUR">EUR</option><option value="USD">USD</option></select></div>
-<div><label>Fecha</label><input id="depDate" type="date"></div>
-<div><label>Importe</label><input id="depAmount" type="number" step="any" placeholder="+10000 o -500"></div>
-</div>
-<div class="form-row">
-<div><label>TIN % (se aplica a este depósito)</label><input id="depTin" type="number" step="0.01" placeholder="ej. 2.50"></div>
-<div><label>Nota (opcional)</label><input id="depNote" type="text" placeholder="Aportación inicial, transferencia…"></div>
-</div>
-<button class="btn btn-orange" onclick="addDepositTx()">Añadir movimiento</button>
-</div>
-<div class="card" style="overflow-x:auto"><b>Histórico de depósitos</b>
-<table><thead><tr><th>Fecha</th><th>Divisa</th><th>Importe</th><th>TIN</th><th>Nota</th><th></th></tr></thead><tbody id="depTxBody"></tbody></table>
-</div>
-<h2>Evolución desde la primera compra</h2>
-<div class="note">Azul = valor total. Naranja = capital neto invertido. Verde = valor de depósitos.</div>
-<div class="chart-box"><canvas id="valueChart"></canvas></div>
-<h2>Evolución última semana</h2>
-<div class="note">Solo el valor total de la cartera, con la escala ampliada para ver el movimiento de cada día.</div>
-<div class="chart-box"><canvas id="weekChartCanvas"></canvas></div>
-<h2>Proyecciones</h2>
-<div class="form-row"><div><label>Rentab. %</label><input id="assumedReturn" type="number" value="8" step="0.5" onchange="updateProjections()"></div><div><label>Vol. %</label><input id="assumedVol" type="number" value="18" onchange="updateProjections()"></div></div>
-<div class="form-row"><div><label>Inflación %</label><input id="assumedInflation" type="number" value="2.5" step="0.1" onchange="updateProjections()"></div></div>
-<div class="card" style="overflow-x:auto"><table><thead><tr><th>Horizonte</th><th>Base</th><th>Medio</th><th>Ajust. inflación</th><th>±1σ</th></tr></thead><tbody id="projBody"></tbody></table></div>
-</div>
-<script src="hist.js?v=19"></script>
-<script src="app.js?v=19"></script>
-<script>document.write('<script src="prices.js?v=19&t='+Date.now()+'"><\/script>');</script>
-</body></html>
+<div id="marketStatus" style="margin-bottom:12px;font-size:.85rem"></div>
+<div class="total-box"><div class="muted">Valor total (acciones + bitcoin + depósitos)</div><div class="total-value" id="totalValue">— €</div><div class="kpi" id="plLine"></div><div class="muted" id="totalSub"></div></div><div class="day-box"><div class="muted">Beneficio desde el cierre anterior</div><div class="day-val" id="dayPl">calculando…</div><div class="muted" id="daySub"></div></div><h2>Acciones, ETFs y Bitcoin</h2><div class="grid" id="holdingsGrid"></div><div class="card"><b>Añadir compra</b><div class="form-row"><div><label>Activo</label><select id="addTicker"><option>TSLA</option><option>SPCX</option><option>QDVE</option><option>VWCE</option></select></div><div><label>Cantidad</label><input id="addQty" type="number" step="any"></div></div><div class="form-row"><div><label>Precio</label><input id="addPrice" type="number" step="any"></div></div><button class="btn" style="width:100%;margin-top:18px" onclick="addPurchase()">Añadir</button></div><div class="card"><b>Añadir Bitcoin</b><div class="muted" style="margin-bottom:8px">Cantidad en BTC y comisión en euros. La comisión no compra bitcoin: se anota como coste y resta del P/L global.</div><div class="form-row-3"><div><label>Fecha</label><input id="btcDate" type="date"></div><div><label>Cantidad BTC</label><input id="btcQty" type="number" step="any" placeholder="0,01000000"></div><div><label>Precio € / BTC</label><input id="btcPrice" type="number" step="any" placeholder="vacío = precio vivo"></div></div><div class="form-row"><div><label>Comisión de compra €</label><input id="btcFee" type="number" step="any" placeholder="0"></div></div><button class="btn btn-orange" style="width:100%;margin-top:18px" onclick="addBtc()">Añadir Bitcoin</button></div><div class="card" style="overflow-x:auto"><b>Movimientos Bitcoin</b><table><thead><tr><th>Fecha</th><th>Tipo</th><th>BTC</th><th>Euros</th><th></th></tr></thead><tbody id="btcTxBody"></tbody></table></div><h2>Depósitos</h2><div class="grid" id="depositsGrid"></div><div class="card"><b>Añadir movimiento de depósito</b><div class="muted" style="margin-bottom:8px">Importe positivo = ingreso. Negativo = retiro. La fecha marca cuándo entra en la gráfica. Al añadir, se guarda solo y también en este dispositivo.</div><div class="form-row-3"><div><label>Depósito</label><select id="depSelect"><option value="EUR">EUR</option><option value="USD">USD</option></select></div><div><label>Fecha</label><input id="depDate" type="date"></div><div><label>Importe</label><input id="depAmount" type="number" step="any" placeholder="10000 o -500"></div></div><div class="form-row"><div><label>TIN % (se aplica a este depósito)</label><input id="depTin" type="number" step="0.01" placeholder="ej. 2.50"></div><div><label>Nota (opcional)</label><input id="depNote" type="text" placeholder="Aportación inicial, transferencia"></div></div><button class="btn btn-orange" onclick="addDepositTx()">Añadir movimiento</button></div><div class="card" style="overflow-x:auto"><b>Histórico de depósitos</b><table><thead><tr><th>Fecha</th><th>Divisa</th><th>Importe</th><th>TIN</th><th>Nota</th><th></th></tr></thead><tbody id="depTxBody"></tbody></table></div><h2>Evolución desde la primera compra</h2><div class="note">Azul = valor total. Naranja = capital neto invertido. Verde = valor de depósitos.</div><div class="chart-box"><canvas id="valueChart"></canvas></div><h2>Evolución última semana</h2><div class="note">Solo el valor total de la cartera, con la escala ampliada para ver el movimiento de cada día.</div><div class="chart-box"><canvas id="weekChartCanvas"></canvas></div><h2>Proyecciones</h2><div class="form-row"><div><label>Rentab. %</label><input id="assumedReturn" type="number" value="8" step="0.5" onchange="updateProjections()"></div><div><label>Vol. %</label><input id="assumedVol" type="number" value="18" onchange="updateProjections()"></div></div><div class="form-row"><div><label>Inflación %</label><input id="assumedInflation" type="number" value="2.5" step="0.1" onchange="updateProjections()"></div></div><div class="card" style="overflow-x:auto"><table><thead><tr><th>Horizonte</th><th>Base</th><th>Medio</th><th>Ajust. inflación</th><th>±1σ</th></tr></thead><tbody id="projBody"></tbody></table></div></div><script src="hist.js?v=19"></script>
+<script src="market-status.js?v=1"></script>
+<script src="app.js?v=19"></script><script>document.write('<script src="prices.js?v=19&t='+Date.now()+'"><\/script>');</script></body></html>
