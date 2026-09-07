@@ -107,21 +107,27 @@ async function firstOk(fns){
   }
   return {};
 }
+function yahooProxies(url){
+  const enc=encodeURIComponent(url);
+  return [
+    function(){return loadJSON('https://corsproxy.io/?'+url,5000);},
+    function(){return loadJSON('https://api.codetabs.com/v1/proxy?quest='+enc,5000);},
+    function(){return loadJSON('https://api.allorigins.win/raw?url='+enc,4000);},
+    function(){return loadJSON('https://api.allorigins.win/get?url='+enc,4000).then(unwrap);},
+    function(){return jsonp('https://api.allorigins.win/get?url='+enc,4000).then(unwrap);},
+    function(){return loadJSON(url,3500);}
+  ];
+}
 async function yahooSpark(){
-  const enc=encodeURIComponent(SPARK);
-  return firstOk([
-    function(){return loadJSON('https://api.allorigins.win/get?url='+enc,4000).then(parseSpark);},
-    function(){return jsonp('https://api.allorigins.win/get?url='+enc,4000).then(parseSpark);},
-    function(){return loadJSON(SPARK,3500).then(parseSpark);}
-  ]);
+  return firstOk(yahooProxies(SPARK).map(function(fn){
+    return function(){return fn().then(parseSpark);};
+  }));
 }
 async function yahooOne(k, symbol){
   const y='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(symbol)+'?interval=1d&range=1d';
-  const enc=encodeURIComponent(y);
-  return firstOk([
-    function(){return loadJSON('https://api.allorigins.win/raw?url='+enc,3500).then(function(d){return parseChart(d,k);});},
-    function(){return jsonp('https://api.allorigins.win/get?url='+enc,4000).then(function(d){return parseChart(d,k);});}
-  ]);
+  return firstOk(yahooProxies(y).map(function(fn){
+    return function(){return fn().then(function(d){return parseChart(d,k);});};
+  }));
 }
 async function btcLive(){
   try{
@@ -195,43 +201,56 @@ function paintNow(fileGot, liveGot, src){
   if(typeof renderAll==='function'){try{renderAll();}catch(e){console.error(e);}}
 }
 async function fetchPrices(opts){
-  if(fetching && Date.now()-fetchStarted<20000)return false;
+  if(fetching && Date.now()-fetchStarted<8000)return false;
   fetching=true;
   fetchStarted=Date.now();
-  const wantLive=!!(opts&&opts.live);
+  const wantLive=!(opts&&opts.live===false);
   setStatus(wantLive?'consultando mercado…':'cargando archivo…');
   let file=null, src='', fileGot=0, liveGot=0;
-  try{file=await loadPricesFile();}catch(e){}
-  if(file&&file.d){fileGot=applyFeed(file.d);src=file.src;}
-  if(fileGot) paintNow(fileGot, 0, src);
-  if(wantLive){
-    let live={};
-    try{live=await fetchLiveOverlay();}catch(e){console.warn('live',e);}
-    liveGot=applyLive(live);
-    if(liveGot) src=(src?src+' + ':'')+'mercado';
+  try{
+    try{file=await loadPricesFile();}catch(e){}
+    if(file&&file.d){fileGot=applyFeed(file.d);src=file.src;}
+    if(fileGot) paintNow(fileGot, 0, src);
+    if(wantLive){
+      let live={};
+      try{live=await fetchLiveOverlay();}catch(e){console.warn('live',e);}
+      liveGot=applyLive(live);
+      if(liveGot) src=(src?src+' + ':'')+'mercado';
+    }
+    if(!fileGot&&!liveGot){
+      setStatus('error precios');
+      return false;
+    }
+    paintNow(fileGot, liveGot, src);
+    if((fileGot||liveGot)&&typeof savePricesOnly==='function'){try{await savePricesOnly();}catch(e){}}
+    return true;
+  }finally{
+    fetching=false;
   }
-  fetching=false;
-  if(!fileGot&&!liveGot){
-    setStatus('error precios');
-    return false;
-  }
-  paintNow(fileGot, liveGot, src);
-  if((fileGot||liveGot)&&typeof savePricesOnly==='function'){try{await savePricesOnly();}catch(e){}}
-  return true;
 }
 async function manualRefresh(){
   fetching=false;
-  const ok=await fetchPrices({live:true});
-  if(!ok) setStatus((priceStatus||'error')+' · reintenta');
+  const btn=document.querySelector('button[onclick="manualRefresh()"]');
+  if(btn){btn.disabled=true;btn.textContent='Actualizando…';}
+  setStatus('consultando mercado…');
+  try{
+    const ok=await fetchPrices({live:true});
+    if(!ok) setStatus((priceStatus||'error')+' · reintenta');
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Actualizar precios';}
+  }
 }
 function startPriceLoop(){
   if(priceLoopStarted){
-    fetchPrices({live:false});
+    fetchPrices({live:true});
     return;
   }
   priceLoopStarted=true;
-  fetchPrices({live:false});
+  fetchPrices({live:true});
   setInterval(function(){fetchPrices({live:true});}, REFRESH_MS);
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden) fetchPrices({live:true});
+  });
 }
 const _renderTotal=typeof renderTotal==='function'?renderTotal:function(){};
 renderTotal=function(){_renderTotal();patchPriceStatus();};
