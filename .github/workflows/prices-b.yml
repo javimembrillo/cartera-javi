@@ -1,29 +1,10 @@
-# Segunda alarma horaria. GitHub a veces descarta un cron y deja pasar el otro.
-name: Precios respaldo
+name: prices-b (desactivado)
+
 on:
-  schedule:
-    - cron: "17 * * * *"
   workflow_dispatch:
-permissions:
-  contents: write
-concurrency:
-  group: prices
-  cancel-in-progress: false
+
 jobs:
-  update:
+  noop:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - run: python3 update_prices.py
-      - name: Commit prices.json
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add prices.json
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "chore: actualizar prices.json"
-          git pull --rebase origin main
-          git push
+      - run: echo "Sustituido por refresh-prices.yml"
