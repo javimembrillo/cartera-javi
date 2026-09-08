@@ -2,7 +2,7 @@ name: Actualizar precios
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '7,22,37,52 * * * *'
   workflow_dispatch:
 
 permissions:
@@ -28,7 +28,7 @@ jobs:
       - name: Actualizar cotizaciones
         run: python update_prices.py
 
-      - name: Comprobar permisos de escritura
+      - name: Guardar precios si han cambiado
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -39,7 +39,7 @@ jobs:
           fi
           git commit -m "chore: actualizar precios"
           if ! git push; then
-            echo "::error::No se pudo publicar prices.json. Revisa Settings > Actions > General > Workflow permissions y marca 'Read and write permissions'."
+            echo "::error::No se pudo publicar prices.json. Revisa Settings > Actions > General > Workflow permissions."
             exit 1
           fi
           echo "Publicado correctamente"

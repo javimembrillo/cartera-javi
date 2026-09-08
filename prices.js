@@ -1,5 +1,7 @@
 let lastPriceAt=null,lastSeenAt=null,priceStatus='pendiente',priceLoopStarted=false,fetching=false,fetchStarted=0;
 const REFRESH_MS=5*60*1000;
+const STALE_MS=12*60*1000;
+const LIVE_TICK={TSLA:'tsla.us',SPCX:'spcx.us'};
 
 function patchPriceStatus(){
   const el=document.getElementById('totalSub');
@@ -44,13 +46,40 @@ function loadPricesFile(){
     throw lastError||new Error('No se pudo leer prices.json');
   })();
 }
-function paintStatus(got,source){
+function isMarketOpenNow(name){
+  if(typeof window==='undefined'||!window.__marketStatusNow)return false;
+  try{
+    const s=window.__marketStatusNow(name);
+    return !!(s&&s.open);
+  }catch(e){return false;}
+}
+async function tryLiveOverlay(){
+  if(!isMarketOpenNow('wallstreet'))return 0;
+  let got=0;
+  await Promise.all(Object.keys(LIVE_TICK).map(async function(k){
+    try{
+      const ctrl=typeof AbortController!=='undefined'?new AbortController():null;
+      const t=setTimeout(function(){try{ctrl&&ctrl.abort();}catch(e){}},4000);
+      const r=await fetch('https://stooq.com/q/l/?s='+LIVE_TICK[k]+'&i=d',{signal:ctrl?ctrl.signal:undefined});
+      clearTimeout(t);
+      if(!r.ok)return;
+      const line=(await r.text()).trim().split('\n')[0];
+      const parts=line.split(',');
+      const px=+parts[6];
+      if(px>0){prices[k]=px;got++;}
+    }catch(e){/* CORS o red: se ignora, no afecta al resto de la app */}
+  }));
+  if(got){lastSeenAt=new Date();}
+  return got;
+}
+function paintStatus(got,source,liveGot){
   const total=(typeof ASSETS!=='undefined'&&ASSETS.length)||5;
   const age=lastPriceAt?fmtWhen(lastPriceAt):'sin fecha';
-  setStatus(got+'/'+total+' archivo · '+age+(source?' · '+source:''));
+  const liveTxt=liveGot?(' + '+liveGot+' en vivo'):'';
+  setStatus(got+'/'+total+' archivo'+liveTxt+' · '+age+(source?' · '+source:''));
 }
-function repaint(got,source){
-  paintStatus(got,source);
+function repaint(got,source,liveGot){
+  paintStatus(got,source,liveGot);
   if(typeof renderAll==='function'){
     try{renderAll();}catch(error){console.error(error);}
   }
@@ -64,7 +93,12 @@ async function fetchPrices(){
     const result=await loadPricesFile();
     const got=applyFeed(result.data);
     if(!got){setStatus('archivo sin precios');return false;}
-    repaint(got,result.source);
+    let liveGot=0;
+    const isStale=!lastPriceAt||(Date.now()-lastPriceAt.getTime())>STALE_MS;
+    if(isStale){
+      try{liveGot=await tryLiveOverlay();}catch(e){}
+    }
+    repaint(got,result.source,liveGot);
     return true;
   }catch(error){
     console.error('No se pudieron cargar precios',error);

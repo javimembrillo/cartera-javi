@@ -60,6 +60,12 @@
     el.innerHTML=badge('Europa', xetraStatus())+badge('Wall Street', nyseStatus());
   }
 
+  window.__marketStatusNow=function(name){
+    if(name==='wallstreet')return nyseStatus();
+    if(name==='europa')return xetraStatus();
+    return {open:false,label:'desconocido'};
+  };
+
   document.addEventListener('DOMContentLoaded',render);
   if(document.readyState==='complete'||document.readyState==='interactive')render();
   setInterval(render,60000);
