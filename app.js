@@ -406,17 +406,18 @@ function lastWeekPts(){
     const iso=isoFromDate(d);
     const live=i===0;
     const s=snapshotOn(iso,live);
-    pts.push({t:live?Date.now():d.getTime(),v:s.v});
+    pts.push({t:live?Date.now():d.getTime(),v:s.v,pl:s.pl,inv:s.inv});
   }
   return pts;
 }
-function weekOpts(pts){
+function weekOpts(pts,key){
   const o=lineOpts();
   o.plugins={
     legend:{display:false},
     tooltip:{callbacks:{label:function(ctx){return ' '+Number(ctx.parsed.y).toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2})+' \u20ac';}}}
   };
-  const vals=pts.map(function(h){return +h.v;}).filter(function(n){return isFinite(n);});
+  const k=key||'v';
+  const vals=pts.map(function(h){return +h[k];}).filter(function(n){return isFinite(n);});
   if(!vals.length)return o;
   const mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
   const span=Math.max(mx-mn,1);
@@ -426,15 +427,24 @@ function weekOpts(pts){
   o.scales.y.ticks.callback=function(v){return Number(v).toLocaleString('es-ES',{maximumFractionDigits:0})+' \u20ac';};
   return o;
 }
+function weekLabel(h){return new Date(h.t).toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short'});}
 function updateWeekChart(){
   const pts=lastWeekPts();
   paintChart(
     'weekChartCanvas',
     'week',
     pts,
-    function(h){return new Date(h.t).toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short'});},
+    weekLabel,
     [{label:'Valor cartera (\u20ac)',data:pts.map(function(h){return h.v;}),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.18)',fill:true,tension:.25,pointRadius:5,pointHoverRadius:7,borderWidth:2.5,spanGaps:true}],
-    weekOpts(pts)
+    weekOpts(pts,'v')
+  );
+  paintChart(
+    'weekPlChartCanvas',
+    'weekPl',
+    pts,
+    weekLabel,
+    [{label:'Rendimiento neto (\u20ac)',data:pts.map(function(h){return h.pl;}),borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.18)',fill:true,tension:.25,pointRadius:5,pointHoverRadius:7,borderWidth:2.5,spanGaps:true}],
+    weekOpts(pts,'pl')
   );
 }
 function updateProjections(){const rEl=document.getElementById('assumedReturn'),vEl=document.getElementById('assumedVol'),iEl=document.getElementById('assumedInflation'),tb=document.getElementById('projBody');if(!tb)return;const r=(+(rEl&&rEl.value)||8)/100,vol=(+(vEl&&vEl.value)||18)/100,inf=(+(iEl&&iEl.value)||2.5)/100,base=total();const hs=[['1 d\u00eda',1/365],['1 sem',7/365],['1 mes',1/12],['1 a\u00f1o',1],['5 a\u00f1os',5],['10 a\u00f1os',10]];tb.innerHTML='';hs.forEach(function(item){const l=item[0],y=item[1];const m=base*Math.pow(1+r,y),real=m/Math.pow(1+inf,y),s=base*vol*Math.sqrt(y);tb.innerHTML+='<tr><td>'+l+'</td><td>'+fmt(base)+' \u20ac</td><td><b>'+fmt(m)+' \u20ac</b></td><td>'+fmt(real)+' \u20ac</td><td>'+fmt(Math.max(0,m-s))+' \u2013 '+fmt(m+s)+' \u20ac</td></tr>';});}
