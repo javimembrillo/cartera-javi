@@ -1,9 +1,9 @@
 let lastPriceAt=null,lastSeenAt=null,priceStatus='pendiente',priceLoopStarted=false,fetching=false,fetchStarted=0,lastLiveAt=0;
 const REFRESH_MS=15*60*1000;
-const CNBC='https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=TSLA|SPCX|QDVE-DE|VWCE-DE&requestMethod=itv&noform=1&partnerId=2&output=json';
-const CNBC_MAP={'TSLA':'TSLA','SPCX':'SPCX','QDVE-DE':'QDVE','VWCE-DE':'VWCE','QDVE.DE':'QDVE','VWCE.DE':'VWCE'};
-const SPARK='https://query1.finance.yahoo.com/v7/finance/spark?symbols=TSLA,SPCX,QDVE.DE,VWCE.DE,BTC-EUR&range=1d&interval=1d';
-const YSYM={'TSLA':'TSLA','SPCX':'SPCX','QDVE.DE':'QDVE','VWCE.DE':'VWCE','BTC-EUR':'BTC'};
+const CNBC='https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols=TSLA|SPCX|NVDA|QDVE-DE|VWCE-DE&requestMethod=itv&noform=1&partnerId=2&output=json';
+const CNBC_MAP={'TSLA':'TSLA','SPCX':'SPCX','NVDA':'NVDA','QDVE-DE':'QDVE','VWCE-DE':'VWCE','QDVE.DE':'QDVE','VWCE.DE':'VWCE'};
+const SPARK='https://query1.finance.yahoo.com/v7/finance/spark?symbols=TSLA,SPCX,NVDA,QDVE.DE,VWCE.DE,BTC-EUR&range=1d&interval=1d';
+const YSYM={'TSLA':'TSLA','SPCX':'SPCX','NVDA':'NVDA','QDVE.DE':'QDVE','VWCE.DE':'VWCE','BTC-EUR':'BTC'};
 
 function patchPriceStatus(){
   const el=document.getElementById('totalSub');
@@ -136,7 +136,7 @@ async function fetchLiveOverlay(){
   const btcP=btcLive();
   const fxP=fxLive();
   try{Object.assign(got, await cnbcLive());}catch(e){console.warn('cnbc',e);}
-  const missing=['TSLA','SPCX','QDVE','VWCE'].filter(function(k){return !(got[k]>0);});
+  const missing=['TSLA','SPCX','NVDA','QDVE','VWCE'].filter(function(k){return !(got[k]>0);});
   if(missing.length){
     try{Object.assign(got, await yahooViaJina());}catch(e){console.warn('jina',e);}
   }

@@ -1,12 +1,12 @@
 const firebaseConfig={apiKey:"AIzaSyCAhTFcJqDtUUjntwrApGGOv7RBRxuqPAw",authDomain:"cartera-membrillo-quinonez.firebaseapp.com",projectId:"cartera-membrillo-quinonez",storageBucket:"cartera-membrillo-quinonez.firebasestorage.app",messagingSenderId:"131713034804",appId:"1:131713034804:web:6cd27c06ec30b4af3d7861"};
 firebase.initializeApp(firebaseConfig);const auth=firebase.auth(),db=firebase.firestore();
 const ALLOWED=['javier@doctormembrillo.com','mabel.felicia@gmail.com'];
-const NAMES={QDVE:'iShares S&P 500 Info Tech',TSLA:'Tesla',VWCE:'Vanguard FTSE All-World',SPCX:'SpaceX',BTC:'Bitcoin'};
-const CCY={QDVE:'EUR',TSLA:'USD',VWCE:'EUR',SPCX:'USD',BTC:'EUR'};
-const STOCKS=['TSLA','SPCX','QDVE','VWCE'];
-const ASSETS=['TSLA','SPCX','QDVE','VWCE','BTC'];
+const NAMES={QDVE:'iShares S&P 500 Info Tech',TSLA:'Tesla',VWCE:'Vanguard FTSE All-World',SPCX:'SpaceX',NVDA:'NVIDIA',BTC:'Bitcoin'};
+const CCY={QDVE:'EUR',TSLA:'USD',VWCE:'EUR',SPCX:'USD',NVDA:'USD',BTC:'EUR'};
+const STOCKS=['TSLA','SPCX','NVDA','QDVE','VWCE'];
+const ASSETS=['TSLA','SPCX','NVDA','QDVE','VWCE','BTC'];
 const LS_KEY='carteraJavi.ledger.v1';
-const SEED=[{d:'2024-11-01',t:'TSLA',q:8,a:-2002.68,c:'USD'},{d:'2024-11-12',t:'TSLA',q:-8,a:2716.01,c:'USD'},{d:'2025-02-03',t:'QDVE',q:63,a:-1976.31,c:'EUR'},{d:'2025-02-17',t:'QDVE',q:2.2782503,a:-75,c:'EUR'},{d:'2025-02-20',t:'QDVE',q:3.6226415,a:-120,c:'EUR'},{d:'2025-03-03',t:'QDVE',q:13.02879202,a:-405,c:'EUR'},{d:'2025-03-10',t:'QDVE',q:5.22739153,a:-150,c:'EUR'},{d:'2025-03-26',t:'TSLA',q:1,a:-273.84,c:'USD'},{d:'2025-03-28',t:'TSLA',q:0.40674026,a:-112,c:'USD'},{d:'2025-04-09',t:'TSLA',q:0.73018699,a:-164,c:'USD'},{d:'2025-04-09',t:'TSLA',q:0.05211428,a:-13.68,c:'USD'},{d:'2025-04-28',t:'TSLA',q:0.53635073,a:-155,c:'USD'},{d:'2025-05-08',t:'QDVE',q:18.07011203,a:-500,c:'EUR'},{d:'2025-05-08',t:'TSLA',q:1.78814104,a:-500,c:'USD'},{d:'2025-05-21',t:'QDVE',q:22.93967714,a:-675,c:'EUR'},{d:'2025-05-21',t:'TSLA',q:0.58034937,a:-200,c:'USD'},{d:'2025-05-23',t:'QDVE',q:3.26404397,a:-95,c:'EUR'},{d:'2025-05-26',t:'QDVE',q:1.89491817,a:-55,c:'EUR'},{d:'2025-06-02',t:'QDVE',q:5.18045242,a:-150,c:'EUR'},{d:'2026-06-08',t:'VWCE',q:11.96288454,a:-1921,c:'EUR'},{d:'2026-06-09',t:'VWCE',q:12.35635734,a:-2000,c:'EUR'},{d:'2025-06-09',t:'TSLA',q:6.64963427,a:-1900,c:'USD'},{d:'2025-06-27',t:'QDVE',q:18.07326125,a:-560,c:'EUR'},{d:'2025-07-02',t:'QDVE',q:4.8828125,a:-150,c:'EUR'},{d:'2025-07-07',t:'QDVE',q:6.22804215,a:-195,c:'EUR'},{d:'2025-07-08',t:'TSLA',q:0.25648306,a:-77.37,c:'USD'},{d:'2025-07-08',t:'TSLA',q:1,a:-302.07,c:'USD'},{d:'2025-07-15',t:'QDVE',q:3.99749176,a:-127.5,c:'EUR'},{d:'2025-07-22',t:'QDVE',q:4.2313117,a:-135,c:'EUR'},{d:'2025-07-29',t:'QDVE',q:12.87787181,a:-426,c:'EUR'},{d:'2025-08-04',t:'TSLA',q:1,a:-308.08,c:'USD'},{d:'2025-08-04',t:'TSLA',q:1,a:-308.04,c:'USD'},{d:'2025-11-07',t:'QDVE',q:15,a:-533.78,c:'EUR'},{d:'2025-11-07',t:'QDVE',q:9.18263678,a:-326.4,c:'EUR'},{d:'2025-11-07',t:'QDVE',q:2.02029297,a:-71.83,c:'EUR'},{d:'2025-11-07',t:'TSLA',q:2,a:-851.19,c:'USD'},{d:'2025-11-26',t:'QDVE',q:3,a:-108.15,c:'EUR'},{d:'2025-11-26',t:'TSLA',q:1,a:-421.85,c:'USD'},{d:'2026-01-05',t:'TSLA',q:2,a:-904.42,c:'USD'},{d:'2026-03-13',t:'TSLA',q:4,a:-1584.36,c:'USD'},{d:'2026-04-01',t:'QDVE',q:30,a:-988.8,c:'EUR'},{d:'2026-06-29',t:'TSLA',q:1.02303132,a:-390,c:'USD'},{d:'2026-07-30',t:'TSLA',q:4.95867768,a:-1500,c:'USD'},{d:'2026-07-30',t:'SPCX',q:17.42525579,a:-2000,c:'USD'},{d:'2026-08-21',t:'SPCX',q:2.23596403,a:-300,c:'USD'},{d:'2026-08-21',t:'TSLA',q:0.02,a:-7.19,c:'USD'},{d:'2026-08-21',t:'SPCX',q:0.31427103,a:-42.81,c:'USD'}];
+const SEED=[{d:'2024-11-01',t:'TSLA',q:8,a:-2002.68,c:'USD'},{d:'2024-11-12',t:'TSLA',q:-8,a:2716.01,c:'USD'},{d:'2025-02-03',t:'QDVE',q:63,a:-1976.31,c:'EUR'},{d:'2025-02-17',t:'QDVE',q:2.2782503,a:-75,c:'EUR'},{d:'2025-02-20',t:'QDVE',q:3.6226415,a:-120,c:'EUR'},{d:'2025-03-03',t:'QDVE',q:13.02879202,a:-405,c:'EUR'},{d:'2025-03-10',t:'QDVE',q:5.22739153,a:-150,c:'EUR'},{d:'2025-03-26',t:'TSLA',q:1,a:-273.84,c:'USD'},{d:'2025-03-28',t:'TSLA',q:0.40674026,a:-112,c:'USD'},{d:'2025-04-09',t:'TSLA',q:0.73018699,a:-164,c:'USD'},{d:'2025-04-09',t:'TSLA',q:0.05211428,a:-13.68,c:'USD'},{d:'2025-04-28',t:'TSLA',q:0.53635073,a:-155,c:'USD'},{d:'2025-05-08',t:'QDVE',q:18.07011203,a:-500,c:'EUR'},{d:'2025-05-08',t:'TSLA',q:1.78814104,a:-500,c:'USD'},{d:'2025-05-21',t:'QDVE',q:22.93967714,a:-675,c:'EUR'},{d:'2025-05-21',t:'TSLA',q:0.58034937,a:-200,c:'USD'},{d:'2025-05-23',t:'QDVE',q:3.26404397,a:-95,c:'EUR'},{d:'2025-05-26',t:'QDVE',q:1.89491817,a:-55,c:'EUR'},{d:'2025-06-02',t:'QDVE',q:5.18045242,a:-150,c:'EUR'},{d:'2026-06-08',t:'VWCE',q:11.96288454,a:-1921,c:'EUR'},{d:'2026-06-09',t:'VWCE',q:12.35635734,a:-2000,c:'EUR'},{d:'2025-06-09',t:'TSLA',q:6.64963427,a:-1900,c:'USD'},{d:'2025-06-27',t:'QDVE',q:18.07326125,a:-560,c:'EUR'},{d:'2025-07-02',t:'QDVE',q:4.8828125,a:-150,c:'EUR'},{d:'2025-07-07',t:'QDVE',q:6.22804215,a:-195,c:'EUR'},{d:'2025-07-08',t:'TSLA',q:0.25648306,a:-77.37,c:'USD'},{d:'2025-07-08',t:'TSLA',q:1,a:-302.07,c:'USD'},{d:'2025-07-15',t:'QDVE',q:3.99749176,a:-127.5,c:'EUR'},{d:'2025-07-22',t:'QDVE',q:4.2313117,a:-135,c:'EUR'},{d:'2025-07-29',t:'QDVE',q:12.87787181,a:-426,c:'EUR'},{d:'2025-08-04',t:'TSLA',q:1,a:-308.08,c:'USD'},{d:'2025-08-04',t:'TSLA',q:1,a:-308.04,c:'USD'},{d:'2025-11-07',t:'QDVE',q:15,a:-533.78,c:'EUR'},{d:'2025-11-07',t:'QDVE',q:9.18263678,a:-326.4,c:'EUR'},{d:'2025-11-07',t:'QDVE',q:2.02029297,a:-71.83,c:'EUR'},{d:'2025-11-07',t:'TSLA',q:2,a:-851.19,c:'USD'},{d:'2025-11-26',t:'QDVE',q:3,a:-108.15,c:'EUR'},{d:'2025-11-26',t:'TSLA',q:1,a:-421.85,c:'USD'},{d:'2026-01-05',t:'TSLA',q:2,a:-904.42,c:'USD'},{d:'2026-03-13',t:'TSLA',q:4,a:-1584.36,c:'USD'},{d:'2026-04-01',t:'QDVE',q:30,a:-988.8,c:'EUR'},{d:'2026-06-29',t:'TSLA',q:1.02303132,a:-390,c:'USD'},{d:'2026-07-30',t:'TSLA',q:4.95867768,a:-1500,c:'USD'},{d:'2026-07-30',t:'SPCX',q:17.42525579,a:-2000,c:'USD'},{d:'2026-08-21',t:'SPCX',q:2.23596403,a:-300,c:'USD'},{d:'2026-08-21',t:'TSLA',q:0.02,a:-7.19,c:'USD'},{d:'2026-08-21',t:'SPCX',q:0.31427103,a:-42.81,c:'USD'},{d:'2026-11-06',t:'NVDA',q:1.86915762,a:-357.56,c:'USD'},{d:'2026-11-06',t:'SPCX',q:3.81593149,a:-500,c:'USD'},{d:'2026-11-06',t:'TSLA',q:1.43550285,a:-500,c:'USD'}];
 function fxOn(d){const y=+d.slice(0,4),m=+d.slice(5,7);if(y<=2024)return 1.082;if(y===2025){if(m<=4)return 1.09;if(m<=8)return 1.14;return 1.16;}return eurusd||1.17;}
 function toEUR(a,c,d){return c==='EUR'?a:a/fxOn(d);}
 function pxFromDaily(tk,d){
@@ -44,7 +44,7 @@ function setSaveHint(msg,ok){
   el.className='muted '+(ok===false?'neg':(ok?'pos':''));
 }
 
-let holdings={},prices={QDVE:42.52,TSLA:353.12,VWCE:165.62,SPCX:136,BTC:0};
+let holdings={},prices={QDVE:42.52,TSLA:353.12,VWCE:165.62,SPCX:136,NVDA:191.29,BTC:0};
 let deposits={EUR:{tin:0},USD:{tin:0}};
 let depositTxs=[],extraTxs=[],snapshots=[];
 let dailyPrices={};
@@ -168,12 +168,28 @@ async function load(){
       if(!(deposits.USD&&deposits.USD.tin)&&local.deposits.USD) deposits.USD=local.deposits.USD;
     }
   }
+  const liquidated=applyDepositLiquidations();
   applyLedger();
   dataLoaded=true;
   persistLocal();
-  if(depositTxs.length&&!cloudHadDeposits){
+  if((depositTxs.length&&!cloudHadDeposits)||liquidated){
     try{await save();}catch(e){console.error(e);}
   }
+}
+// Liquidación total de los dos depósitos (06/11/2026). Se apunta una sola vez (id fijo) por el valor
+// acumulado (aportado + intereses) que calcula la propia app en esa fecha.
+const DEP_LIQUIDATIONS=[{id:'liq-EUR-20261106',k:'EUR',d:'2026-11-06'},{id:'liq-USD-20261106',k:'USD',d:'2026-11-06'}];
+function applyDepositLiquidations(){
+  let added=false;
+  DEP_LIQUIDATIONS.forEach(function(L){
+    if(depositTxs.some(function(t){return t&&t.id===L.id;}))return;
+    const prin=depPrincipalOn(L.d,L.k);
+    if(!(prin>0.005))return;
+    const val=Math.round(depValueNativeOn(L.d,L.k)*100)/100;
+    depositTxs.push({id:L.id,d:L.d,k:L.k,a:-val,tin:(deposits[L.k]&&deposits[L.k].tin)||0,note:'Liquidación total del depósito (aportado + intereses)'});
+    added=true;
+  });
+  return added;
 }
 function save(){
   if(!dataLoaded) return Promise.resolve();
@@ -287,7 +303,7 @@ function renderHoldings(){
     g.appendChild(c);
   });
 }
-function renderDeps(){const g=document.getElementById('depositsGrid');if(!g)return;g.innerHTML='';const today=todayISO();['EUR','USD'].forEach(function(k){const prin=depPrincipalOn(today,k);const valN=depValueNativeOn(today,k);const valE=k==='EUR'?valN:valN/eurusd;const intN=valN-prin;const tin=(deposits[k]&&deposits[k].tin)||0;const c=document.createElement('div');c.className='card';c.innerHTML='<div style="display:flex;justify-content:space-between"><b>Dep\u00f3sito '+k+'</b><span class="badge badge-dep">TIN '+fmt(tin,2)+'%</span></div><div class="price-row"><span>Aportado neto</span><span>'+fmt(prin)+' '+k+'</span></div><div class="price-row"><span>Intereses est.</span><span class="'+(intN>=0?'pos':'neg')+'">'+(intN>=0?'+':'')+fmt(intN)+' '+k+'</span></div><div class="value-eur">'+fmt(valE)+' \u20ac</div>';g.appendChild(c);});const tb=document.getElementById('depTxBody');if(!tb)return;tb.innerHTML='';depositTxs.slice().sort(function(a,b){return b.d.localeCompare(a.d);}).forEach(function(t){const cls=t.a>=0?'pos':'neg';tb.innerHTML+='<tr><td>'+t.d+'</td><td>'+t.k+'</td><td class="'+cls+'">'+(t.a>=0?'+':'')+fmt(t.a)+' '+t.k+'</td><td>'+fmt(t.tin||0,2)+'%</td><td style="text-align:left">'+(t.note||'')+'</td><td><button class="btn-danger" onclick="removeDepositTx(\''+t.id+'\')">Quitar</button></td></tr>';});}
+function renderDeps(){const g=document.getElementById('depositsGrid');if(!g)return;g.innerHTML='';const today=todayISO();['EUR','USD'].forEach(function(k){const prin=depPrincipalOn(today,k);const valN=depValueNativeOn(today,k);const valE=k==='EUR'?valN:valN/eurusd;const intN=valN-prin;const tin=(deposits[k]&&deposits[k].tin)||0;const c=document.createElement('div');c.className='card';c.innerHTML='<div style="display:flex;justify-content:space-between"><b>Dep\u00f3sito '+k+'</b><span class="badge badge-dep">TIN '+fmt(tin,2)+'%</span></div><div class="price-row"><span>Aportado neto</span><span>'+fmt(prin)+' '+k+'</span></div><div class="price-row"><span>Intereses est.</span><span class="'+(intN>=0?'pos':'neg')+'">'+(intN>=0?'+':'')+fmt(intN)+' '+k+'</span></div><div class="value-eur">'+fmt(valE)+' \u20ac</div>'+((prin<0.005&&depositTxs.some(function(t){return t.k===k&&t.a<0&&String(t.id||'').indexOf('liq-')===0;}))?'<div class="muted">Liquidado el 06/11/2026</div>':'');g.appendChild(c);});const tb=document.getElementById('depTxBody');if(!tb)return;tb.innerHTML='';depositTxs.slice().sort(function(a,b){return b.d.localeCompare(a.d);}).forEach(function(t){const cls=t.a>=0?'pos':'neg';tb.innerHTML+='<tr><td>'+t.d+'</td><td>'+t.k+'</td><td class="'+cls+'">'+(t.a>=0?'+':'')+fmt(t.a)+' '+t.k+'</td><td>'+fmt(t.tin||0,2)+'%</td><td style="text-align:left">'+(t.note||'')+'</td><td><button class="btn-danger" onclick="removeDepositTx(\''+t.id+'\')">Quitar</button></td></tr>';});}
 function renderTotal(){
   const v=total(),invDep=depInvestedEUROn(todayISO()),invS=investedStocksEUR,invB=investedBtcEUR,inv=invS+invB+invDep;
   const vS=stocksNow(),vB=btcNow(),vD=depNow(),fees=btcFeesOn(todayISO());
@@ -397,19 +413,25 @@ function lineOpts(){return {responsive:true,maintainAspectRatio:false,plugins:{l
 function lineSets(pts){return [{label:'Valor total (\u20ac)',data:pts.map(function(h){return h.v;}),borderColor:'#3b82f6',spanGaps:true,fill:true,backgroundColor:'rgba(59,130,246,.10)',tension:.15,pointRadius:2},{label:'Invertido total (\u20ac)',data:pts.map(function(h){return h.inv;}),borderColor:'#f59e0b',borderDash:[6,4],fill:false,tension:0,pointRadius:2},{label:'Valor dep\u00f3sitos (\u20ac)',data:pts.map(function(h){return h.vDep||0;}),borderColor:'#14b8a6',borderDash:[2,3],fill:false,tension:0,pointRadius:2}];}
 function paintChart(canvasId,instKey,pts,labelFn,datasets,opts){try{const el=document.getElementById(canvasId);if(!el||typeof Chart==='undefined'||!pts||!pts.length)return;const labels=pts.map(labelFn);if(chartInst[instKey]){try{chartInst[instKey].destroy();}catch(e){}}chartInst[instKey]=new Chart(el.getContext('2d'),{type:'line',data:{labels:labels,datasets:datasets||lineSets(pts)},options:opts||lineOpts()});}catch(e){console.error('chart',canvasId,e);}}
 function updateChart(){const pts=(history||[]).slice();(snapshots||[]).forEach(function(s){pts.push(s);});pts.sort(function(a,b){return a.t-b.t;});const last=pts[pts.length-1];if(!last||Math.abs(last.t-Date.now())>36e5)pts.push({t:Date.now(),v:total(),inv:investedTotal(),vDep:depNow()});paintChart('valueChart','hist',pts,function(h){return new Date(h.t).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'2-digit'});});updateWeekChart();}
-function lastWeekPts(){
+const RANGES={semanal:{days:7,step:1,label:'Semanal'},mensual:{days:30,step:1,label:'Mensual'},semestral:{days:182,step:3,label:'Semestral'},anual:{days:365,step:7,label:'Anual'}};
+const RANGE_LS='carteraJavi.ranges.v1';
+let chartRanges=(function(){try{return Object.assign({v:'semanal',pl:'semanal'},JSON.parse(localStorage.getItem(RANGE_LS)||'{}'));}catch(e){return {v:'semanal',pl:'semanal'};}})();
+function rangePts(key){
+  const R=RANGES[key]||RANGES.semanal;
   const pts=[];
-  for(let i=7;i>=0;i--){
+  for(let i=R.days;i>=0;i-=R.step){
+    if(i===0)break;
     const d=new Date();
     d.setHours(18,0,0,0);
     d.setDate(d.getDate()-i);
-    const iso=isoFromDate(d);
-    const live=i===0;
-    const s=snapshotOn(iso,live);
-    pts.push({t:live?Date.now():d.getTime(),v:s.v,pl:s.pl,inv:s.inv});
+    const s=snapshotOn(isoFromDate(d),false);
+    pts.push({t:d.getTime(),v:s.v,pl:s.pl,inv:s.inv});
   }
+  const now=snapshotOn(todayISO(),true);
+  pts.push({t:Date.now(),v:now.v,pl:now.pl,inv:now.inv});
   return pts;
 }
+function lastWeekPts(){return rangePts('semanal');}
 function weekOpts(pts,key){
   const o=lineOpts();
   o.plugins={
@@ -421,31 +443,52 @@ function weekOpts(pts,key){
   if(!vals.length)return o;
   const mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals);
   const span=Math.max(mx-mn,1);
-  const pad=Math.max(span*0.45,Math.abs(mx)*0.0025,25);
+  const pad=Math.max(span*0.12,Math.abs(mx)*0.0025,25);
   o.scales.y.min=Math.floor((mn-pad)/10)*10;
   o.scales.y.max=Math.ceil((mx+pad)/10)*10;
   o.scales.y.ticks.callback=function(v){return Number(v).toLocaleString('es-ES',{maximumFractionDigits:0})+' \u20ac';};
   return o;
 }
-function weekLabel(h){return new Date(h.t).toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short'});}
+function rangeLabelFn(key){
+  if(key==='semanal')return function(h){return new Date(h.t).toLocaleDateString('es-ES',{weekday:'short',day:'2-digit',month:'short'});};
+  if(key==='anual'||key==='semestral')return function(h){return new Date(h.t).toLocaleDateString('es-ES',{day:'2-digit',month:'short',year:'2-digit'});};
+  return function(h){return new Date(h.t).toLocaleDateString('es-ES',{day:'2-digit',month:'short'});};
+}
+function weekLabel(h){return rangeLabelFn('semanal')(h);}
+function paintRangeTabs(which){
+  const box=document.getElementById(which==='v'?'rangeTabsV':'rangeTabsPl');if(!box)return;
+  box.innerHTML='';
+  Object.keys(RANGES).forEach(function(k){
+    const b=document.createElement('button');
+    b.className='btn btn-sm '+(chartRanges[which]===k?'':'btn-secondary');
+    b.textContent=RANGES[k].label;
+    b.onclick=function(){setChartRange(which,k);};
+    box.appendChild(b);
+  });
+}
+function setChartRange(which,key){
+  chartRanges[which]=key;
+  try{localStorage.setItem(RANGE_LS,JSON.stringify(chartRanges));}catch(e){}
+  updateWeekChart();
+}
+function rangeSummary(pts,k,elId){
+  const el=document.getElementById(elId);if(!el||pts.length<2)return;
+  const a=+pts[0][k],b=+pts[pts.length-1][k];if(!isFinite(a)||!isFinite(b))return;
+  const d=b-a;
+  el.innerHTML='Cambio en el periodo: <span class="'+(d>=0?'pos':'neg')+'">'+(d>=0?'+':'')+fmt(d)+' \u20ac</span> \u00b7 inicio '+fmt(a)+' \u20ac \u00b7 ahora '+fmt(b)+' \u20ac';
+}
+function rangeDataset(label,pts,k,color,bg){
+  const big=pts.length>20;
+  return [{label:label,data:pts.map(function(h){return h[k];}),borderColor:color,backgroundColor:bg,fill:true,tension:.25,pointRadius:big?1.5:5,pointHoverRadius:6,borderWidth:big?2:2.5,spanGaps:true}];
+}
 function updateWeekChart(){
-  const pts=lastWeekPts();
-  paintChart(
-    'weekChartCanvas',
-    'week',
-    pts,
-    weekLabel,
-    [{label:'Valor cartera (\u20ac)',data:pts.map(function(h){return h.v;}),borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.18)',fill:true,tension:.25,pointRadius:5,pointHoverRadius:7,borderWidth:2.5,spanGaps:true}],
-    weekOpts(pts,'v')
-  );
-  paintChart(
-    'weekPlChartCanvas',
-    'weekPl',
-    pts,
-    weekLabel,
-    [{label:'Rendimiento neto (\u20ac)',data:pts.map(function(h){return h.pl;}),borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.18)',fill:true,tension:.25,pointRadius:5,pointHoverRadius:7,borderWidth:2.5,spanGaps:true}],
-    weekOpts(pts,'pl')
-  );
+  paintRangeTabs('v');paintRangeTabs('pl');
+  const kv=chartRanges.v||'semanal',kp=chartRanges.pl||'semanal';
+  const ptsV=rangePts(kv);
+  const ptsP=kp===kv?ptsV:rangePts(kp);
+  paintChart('weekChartCanvas','week',ptsV,rangeLabelFn(kv),rangeDataset('Valor cartera (\u20ac)',ptsV,'v','#3b82f6','rgba(59,130,246,.18)'),weekOpts(ptsV,'v'));
+  paintChart('weekPlChartCanvas','weekPl',ptsP,rangeLabelFn(kp),rangeDataset('Beneficio neto (\u20ac)',ptsP,'pl','#22c55e','rgba(34,197,94,.18)'),weekOpts(ptsP,'pl'));
+  rangeSummary(ptsV,'v','rangeSumV');rangeSummary(ptsP,'pl','rangeSumPl');
 }
 function updateProjections(){const rEl=document.getElementById('assumedReturn'),vEl=document.getElementById('assumedVol'),iEl=document.getElementById('assumedInflation'),tb=document.getElementById('projBody');if(!tb)return;const r=(+(rEl&&rEl.value)||8)/100,vol=(+(vEl&&vEl.value)||18)/100,inf=(+(iEl&&iEl.value)||2.5)/100,base=total();const hs=[['1 d\u00eda',1/365],['1 sem',7/365],['1 mes',1/12],['1 a\u00f1o',1],['5 a\u00f1os',5],['10 a\u00f1os',10]];tb.innerHTML='';hs.forEach(function(item){const l=item[0],y=item[1];const m=base*Math.pow(1+r,y),real=m/Math.pow(1+inf,y),s=base*vol*Math.sqrt(y);tb.innerHTML+='<tr><td>'+l+'</td><td>'+fmt(base)+' \u20ac</td><td><b>'+fmt(m)+' \u20ac</b></td><td>'+fmt(real)+' \u20ac</td><td>'+fmt(Math.max(0,m-s))+' \u2013 '+fmt(m+s)+' \u20ac</td></tr>';});}
 function renderAll(){try{renderHoldings();}catch(e){console.error(e);}try{renderBtcTxs();}catch(e){console.error(e);}try{renderDeps();}catch(e){console.error(e);}try{renderTotal();}catch(e){console.error(e);}try{renderDayMove();}catch(e){console.error(e);}try{updateProjections();}catch(e){console.error(e);}try{updateChart();}catch(e){console.error(e);}}
