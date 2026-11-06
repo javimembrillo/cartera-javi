@@ -16,10 +16,11 @@ NAMES = {
     "SPCX": "SpaceX",
     "QDVE": "iShares S&P 500 Info Tech",
     "VWCE": "Vanguard FTSE All-World",
+    "NVDA": "NVIDIA",
     "BTC": "Bitcoin",
 }
-CCY = {"TSLA": "USD", "SPCX": "USD", "QDVE": "EUR", "VWCE": "EUR", "BTC": "EUR"}
-ORDER = ["TSLA", "SPCX", "QDVE", "VWCE", "BTC"]
+CCY = {"TSLA": "USD", "SPCX": "USD", "QDVE": "EUR", "VWCE": "EUR", "NVDA": "USD", "BTC": "EUR"}
+ORDER = ["TSLA", "SPCX", "NVDA", "QDVE", "VWCE", "BTC"]
 
 
 def fmt_num(n, dec=2):

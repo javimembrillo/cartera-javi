@@ -6,6 +6,7 @@ UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like 
 TICK = {
     "TSLA": "TSLA",
     "SPCX": "SPCX",
+    "NVDA": "NVDA",
     "QDVE": "QDVE.DE",
     "VWCE": "VWCE.DE",
     "BTC": "BTC-EUR",
@@ -77,6 +78,7 @@ def stooq_last(symbol):
 STOOQ_TICK = {
     "TSLA": "tsla.us",
     "SPCX": "spcx.us",
+    "NVDA": "nvda.us",
 }
 
 def btc_fallback():
@@ -169,7 +171,8 @@ def main():
 
     today = now_utc().strftime("%Y-%m-%d")
     daily[today].update({k: prices[k] for k in prices})
-    keep = sorted(daily.keys())[-45:]
+    # Historial diario completo (antes solo 45 días) para las gráficas semanal/mensual/semestral/anual
+    keep = sorted(daily.keys())[-1200:]
     daily_out = {d: daily[d] for d in keep}
 
     out = {
