@@ -2,8 +2,11 @@ name: Aviso apertura de mercado
 
 on:
   schedule:
-    - cron: '0 7,8 * * 1-5'
-    - cron: '30 13,14 * * 1-5'
+    # Europa: 09:00 Madrid = 07:00 UTC (verano) o 08:00 UTC (invierno).
+    # Ventana ~3 h; crons extra por si Actions se retrasa.
+    - cron: '0 7,8,9,10,11 * * 1-5'
+    # Wall Street: 09:30 Nueva York = 13:30 UTC (EDT) o 14:30 UTC (EST).
+    - cron: '30 13,14,15,16,17 * * 1-5'
   workflow_dispatch:
     inputs:
       session:
@@ -13,6 +16,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 concurrency:
   group: open-email
@@ -24,6 +28,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+
+      - name: Restaurar marcas de envío
+        uses: actions/cache@v4
+        with:
+          path: .open-email-sent
+          key: open-email-sent-${{ github.run_id }}
+          restore-keys: |
+            open-email-sent-
 
       - uses: actions/setup-python@v5
         with:

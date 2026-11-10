@@ -4,6 +4,7 @@ import os
 import smtplib
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from email.message import EmailMessage
 from zoneinfo import ZoneInfo
 
@@ -36,12 +37,31 @@ def now_utc():
     return datetime.now(timezone.utc)
 
 
-def in_window(local, hour, minute, span=25):
+# Hasta ~3 h tras la apertura, más un margen corto por retrasos del cron.
+WINDOW_MINUTES = 195
+MARKER_DIR = Path(".open-email-sent")
+
+
+def in_window(local, hour, minute, span=WINDOW_MINUTES):
     if local.weekday() >= 5:
         return False
     cur = local.hour * 60 + local.minute
     start = hour * 60 + minute
     return start <= cur <= start + span
+
+
+def marker_file(session):
+    day = now_utc().astimezone(MADRID).strftime("%Y-%m-%d")
+    return MARKER_DIR / f"{day}-{session}"
+
+
+def already_sent(session):
+    return marker_file(session).is_file()
+
+
+def write_marker(session):
+    MARKER_DIR.mkdir(parents=True, exist_ok=True)
+    marker_file(session).write_text(now_utc().isoformat(), encoding="utf-8")
 
 
 def detect_session(forced):
@@ -208,6 +228,11 @@ def main():
     if not session:
         print("fuera de ventana de apertura; no se envia")
         return 0
+    # workflow_dispatch puede reenviar a propósito; los crons, solo una vez al día por sesión.
+    event = (os.environ.get("GITHUB_EVENT_NAME") or "").strip()
+    if event != "workflow_dispatch" and already_sent(session):
+        print(f"ya enviado hoy para {session}; no se reenvia")
+        return 0
     data = load_prices()
     rows = build_rows(data)
     when = now_utc().astimezone(MADRID).strftime("%A %d/%m/%Y %H:%M Madrid")
@@ -216,6 +241,7 @@ def main():
     tsla_txt = fmt_num(tsla["px"], 2) if tsla and tsla["px"] else "—"
     subject = f"{title} · TSLA {tsla_txt} USD · cartera Javi"
     send_mail(subject, text_email(session, data, rows, when), html_email(session, data, rows, when))
+    write_marker(session)
     return 0
 
 
