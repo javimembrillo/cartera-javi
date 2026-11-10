@@ -1,0 +1,11 @@
+{
+  "note": "Activos en cartera. El aviso de apertura y update_prices.py leen esta lista para no desincronizarse.",
+  "holdings": [
+    {"ticker": "TSLA", "name": "Tesla", "currency": "USD", "symbol": "TSLA"},
+    {"ticker": "SPCX", "name": "SpaceX", "currency": "USD", "symbol": "SPCX"},
+    {"ticker": "NVDA", "name": "NVIDIA", "currency": "USD", "symbol": "NVDA"},
+    {"ticker": "QDVE", "name": "iShares S&P 500 Info Tech", "currency": "EUR", "symbol": "QDVE.DE"},
+    {"ticker": "VWCE", "name": "Vanguard FTSE All-World", "currency": "EUR", "symbol": "VWCE.DE"},
+    {"ticker": "BTC", "name": "Bitcoin", "currency": "EUR", "symbol": "BTC-EUR"}
+  ]
+}

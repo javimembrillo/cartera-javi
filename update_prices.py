@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import json, urllib.request, datetime, time
 from collections import defaultdict
+from pathlib import Path
 
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
-TICK = {
+DEFAULT_TICK = {
     "TSLA": "TSLA",
     "SPCX": "SPCX",
     "NVDA": "NVDA",
@@ -11,6 +12,30 @@ TICK = {
     "VWCE": "VWCE.DE",
     "BTC": "BTC-EUR",
 }
+
+
+def load_tick_map():
+    try:
+        data = json.loads(Path("holdings.json").read_text(encoding="utf-8"))
+        items = data.get("holdings") if isinstance(data, dict) else data
+        tick = {}
+        for h in items or []:
+            if not isinstance(h, dict):
+                continue
+            tk = str(h.get("ticker") or "").strip().upper()
+            if not tk:
+                continue
+            tick[tk] = str(h.get("symbol") or h.get("yahoo") or DEFAULT_TICK.get(tk) or tk).strip()
+        if tick:
+            return tick
+    except FileNotFoundError:
+        pass
+    except Exception as e:
+        print("holdings.json no usable, uso lista por defecto:", e)
+    return dict(DEFAULT_TICK)
+
+
+TICK = load_tick_map()
 
 def now_utc():
     return datetime.datetime.now(datetime.timezone.utc)
