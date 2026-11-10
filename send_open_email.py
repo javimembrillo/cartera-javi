@@ -5,6 +5,7 @@ import smtplib
 import sys
 from datetime import datetime, timezone
 from email.message import EmailMessage
+from email.utils import getaddresses
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -299,19 +300,40 @@ def text_email(session, data, rows, when):
     return "\n".join(lines)
 
 
+def parse_recipients(raw, default=TO_DEFAULT):
+    """Acepta uno o varios destinatarios separados por coma o punto y coma."""
+    text = (raw or "").strip() or default
+    addrs = []
+    seen = set()
+    for chunk in text.replace(";", ",").split(","):
+        chunk = chunk.strip()
+        if not chunk:
+            continue
+        for _, addr in getaddresses([chunk]):
+            addr = (addr or "").strip()
+            if not addr or "@" not in addr:
+                continue
+            key = addr.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            addrs.append(addr)
+    return addrs or [default]
+
+
 def send_mail(subject, text, html):
     host = os.environ.get("SMTP_HOST") or "smtp.gmail.com"
     port = int(os.environ.get("SMTP_PORT") or "587")
     user = os.environ.get("SMTP_USER") or os.environ.get("MAIL_FROM") or TO_DEFAULT
     password = os.environ.get("SMTP_PASSWORD") or ""
     mail_from = os.environ.get("MAIL_FROM") or user
-    mail_to = os.environ.get("MAIL_TO") or TO_DEFAULT
+    recipients = parse_recipients(os.environ.get("MAIL_TO"))
     if not password:
         raise SystemExit("Falta el secreto SMTP_PASSWORD")
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = mail_from
-    msg["To"] = mail_to
+    msg["To"] = ", ".join(recipients)
     msg.set_content(text)
     msg.add_alternative(html, subtype="html")
     if port == 465:
@@ -323,8 +345,8 @@ def send_mail(subject, text, html):
         smtp.ehlo()
     with smtp:
         smtp.login(user, password)
-        smtp.send_message(msg)
-    print("email ok", mail_to, subject)
+        smtp.send_message(msg, to_addrs=recipients)
+    print("email ok", ", ".join(recipients), subject)
 
 
 def main():
