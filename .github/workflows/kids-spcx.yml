@@ -1,0 +1,62 @@
+name: Aviso SpaceX de Martín
+
+on:
+  schedule:
+    # Después de la apertura de Wall Street, hacia las 10:00 NY
+    # (16:00 Madrid). 10:00 NY = 15:00 UTC en invierno y 14:00 UTC en verano.
+    # Ventana ~3 h; crons extra por si Actions se retrasa.
+    - cron: '0 14,15,16,17 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      mail_to:
+        description: 'Destinatario de prueba (obligatorio en un disparo manual). No uses el correo de Martín hasta que Javi lo apruebe.'
+        required: true
+        default: 'javier@doctormembrillo.com'
+      force:
+        description: 'Enviar aunque el mercado esté cerrado o fuera de ventana (solo prueba)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: kids-spcx-email
+  cancel-in-progress: false
+
+jobs:
+  mail:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restaurar marcas de envío
+        uses: actions/cache@v4
+        with:
+          path: .kids-email-sent
+          key: kids-email-sent-${{ github.run_id }}
+          restore-keys: |
+            kids-email-sent-
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Actualizar cotizaciones
+        run: python update_prices.py
+        continue-on-error: true
+
+      - name: Enviar aviso de Martín
+        env:
+          KIDS_ENABLED: ${{ secrets.KIDS_ENABLED }}
+          KIDS_MAIL_TO: ${{ secrets.KIDS_MAIL_TO }}
+          KIDS_MAIL_TO_OVERRIDE: ${{ github.event.inputs.mail_to }}
+          KIDS_FORCE: ${{ github.event.inputs.force || 'false' }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+        run: python send_kids_email.py

@@ -1,0 +1,16 @@
+{
+  "note": "Posición de Martín en SpaceX (SPCX). El correo diario no guarda aquí su dirección.",
+  "child_name": "Martín",
+  "holdings": [
+    {
+      "ticker": "SPCX",
+      "name": "SpaceX",
+      "qty": 2,
+      "currency": "USD",
+      "buys": [
+        {"qty": 1, "px_usd": 142},
+        {"qty": 1, "px_usd": 145}
+      ]
+    }
+  ]
+}
